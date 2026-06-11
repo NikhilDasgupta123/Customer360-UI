@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Orion CX – Login</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; width: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── LEFT PANEL – deep space ── */
+    .left {
+      flex: 1;
+      background: #050a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.8rem;
+      padding: 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* star dots */
+    .left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1.5px 1.5px at 12% 18%, #fff 0%, transparent 100%),
+        radial-gradient(1px 1px at 28% 72%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 44% 35%, rgba(255,255,255,0.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 58% 85%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(2px 2px at 70% 22%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 82% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 92% 40%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 18% 90%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 36% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 64% 8%, rgba(255,255,255,0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 76% 78%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 8% 48%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 92%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 50% 65%, rgba(200,220,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 22% 30%, rgba(200,220,255,0.5) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* nebula glow behind graph */
+    .left::after {
+      content: '';
+      position: absolute;
+      width: 420px; height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.10) 40%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .brand-content { position: relative; z-index: 1; text-align: center; }
+
+    .brand-row { display: flex; align-items: center; gap: 13px; justify-content: center; margin-bottom: 10px; }
+
+    .brand-icon {
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px rgba(139,92,246,0.5);
+    }
+    .brand-icon i { font-size: 24px; color: #fff; }
+
+    .brand-name {
+      font-size: 22px; font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .brand-name span { color: #a78bfa; }
+
+    .brand-tagline {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.3px;
+      line-height: 1.6;
+    }
+
+    .network-wrap { position: relative; z-index: 1; }
+    .network-svg {
+      width: min(300px, 52vw);
+      height: min(300px, 52vw);
+      filter: drop-shadow(0 0 18px rgba(139,92,246,0.35));
+    }
+
+    .badge-row {
+      display: flex; gap: 10px; position: relative; z-index: 1;
+    }
+    .badge {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 11.5px;
+      color: rgba(255,255,255,0.55);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .badge i { font-size: 13px; color: #a78bfa; }
+
+    /* ── RIGHT PANEL ── */
+    .right {
+      flex: 1;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2.5rem;
+      overflow-y: auto;
+    }
+
+    .form-inner { width: 100%; max-width: 390px; }
+
+    .welcome-h {
+      font-size: 25px; font-weight: 700;
+      color: #0f172a; text-align: center; margin-bottom: 4px;
+    }
+    .welcome-s {
+      font-size: 13px; color: #94a3b8;
+      text-align: center; margin-bottom: 2rem;
+    }
+
+    .field-lbl {
+      font-size: 12.5px; color: #475569;
+      margin-bottom: 6px; display: block; font-weight: 500;
+    }
+
+    .field-grp { position: relative; margin-bottom: 16px; }
+    .field-grp input {
+      width: 100%;
+      padding: 11px 38px 11px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px; color: #334155;
+      background: #f8fafc; outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field-grp input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+      background: #fff;
+    }
+    .eye-icon {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 17px; color: #94a3b8; cursor: pointer;
+    }
+
+    .forgot-row { text-align: right; margin: -10px 0 16px; }
+    .forgot-row a { font-size: 12.5px; color: #6366f1; text-decoration: none; }
+    .forgot-row a:hover { text-decoration: underline; }
+
+    .signin-btn {
+      width: 100%; padding: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-bottom: 1.2rem;
+      box-shadow: 0 4px 15px rgba(99,102,241,0.35);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .signin-btn:hover { opacity: 0.92; }
+    .signin-btn:active { transform: scale(0.99); }
+
+    .divider {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .divider hr { flex: 1; border: none; border-top: 1px solid #e2e8f0; }
+    .divider span { font-size: 12px; color: #94a3b8; white-space: nowrap; }
+
+    .social-row {
+      display: flex; justify-content: center; gap: 14px;
+      margin-bottom: 1.6rem;
+    }
+    .social-btn {
+      width: 48px; height: 48px;
+      border: 1.5px solid #e2e8f0; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .social-btn:hover {
+      border-color: #a5b4fc;
+      box-shadow: 0 2px 10px rgba(99,102,241,0.12);
+    }
+
+    .role-lbl {
+      font-size: 12.5px; font-weight: 600;
+      color: #0f172a; margin-bottom: 10px;
+    }
+
+    .roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .role-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer; background: #fff;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .role-card:hover { border-color: #a5b4fc; background: #fafbff; }
+    .role-card.active {
+      border: 2px solid #6366f1;
+      background: #f5f3ff;
+    }
+    .role-icon { font-size: 18px; color: #a78bfa; margin-bottom: 6px; }
+    .role-card.active .role-icon { color: #6366f1; }
+    .role-card-t {
+      font-size: 12.5px; font-weight: 600;
+      color: #1e293b; margin-bottom: 2px;
+    }
+    .role-card-s { font-size: 11.5px; color: #64748b; }
+    .role-card.active .role-card-t { color: #4f46e5; }
+    .role-card.active .role-card-s { color: #818cf8; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 680px) {
+      body { flex-direction: column; overflow: auto; height: auto; }
+      .left { padding: 2.5rem 1.5rem 2rem; min-height: 55vh; }
+      .network-svg { width: min(230px, 68vw); height: min(230px, 68vw); }
+      .right { padding: 2.5rem 1.5rem 3rem; }
+      .form-inner { max-width: 100%; }
+    }
+
+    /* ── LARGE ── */
+    @media (min-width: 1400px) {
+      .brand-name { font-size: 26px; }
+      .network-svg { width: 340px; height: 340px; }
+      .welcome-h { font-size: 28px; }
+      .form-inner { max-width: 420px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LEFT: Space panel -->
+<div class="left">
+  <div class="brand-content">
+    <div class="brand-row">
+      <div class="brand-icon"><i class="ti ti-stars"></i></div>
+      <span class="brand-name">Orion <span>CX</span></span>
+    </div>
+    <p class="brand-tagline">AI-Powered Customer Intelligence<br>Navigating Relationships Beyond Horizons</p>
+  </div>
+
+  <div class="network-wrap">
+    <svg class="network-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+      <!-- outer ring -->
+      <circle cx="110" cy="110" r="95" fill="none" stroke="rgba(139,92,246,0.15)" stroke-width="1" stroke-dasharray="4 6"/>
+      <circle cx="110" cy="110" r="68" fill="none" stroke="rgba(99,102,241,0.2)" stroke-width="1" stroke-dasharray="3 5"/>
+
+      <!-- connection lines -->
+      <line x1="110" y1="110" x2="52" y2="58" stroke="#6366f1" stroke-width="1.5" opacity="0.6"/>
+      <line x1="110" y1="110" x2="168" y2="58" stroke="#6366f1" stroke-width="1.5" opacity="0.6"/>
+      <line x1="110" y1="110" x2="36" y2="120" stroke="#8b5cf6" stroke-width="1.5" opacity="0.6"/>
+      <line x1="110" y1="110" x2="184" y2="120" stroke="#8b5cf6" stroke-width="1.5" opacity="0.6"/>
+      <line x1="110" y1="110" x2="80" y2="172" stroke="#a78bfa" stroke-width="1.5" opacity="0.55"/>
+      <line x1="110" y1="110" x2="146" y2="170" stroke="#a78bfa" stroke-width="1.5" opacity="0.55"/>
+      <line x1="52" y1="58" x2="168" y2="58" stroke="#6366f1" stroke-width="1" opacity="0.3"/>
+      <line x1="36" y1="120" x2="80" y2="172" stroke="#8b5cf6" stroke-width="1" opacity="0.3"/>
+      <line x1="184" y1="120" x2="146" y2="170" stroke="#8b5cf6" stroke-width="1" opacity="0.3"/>
+
+      <!-- small star dots -->
+      <circle cx="18" cy="85" r="3" fill="#a78bfa" opacity="0.6"/>
+      <circle cx="200" cy="85" r="3" fill="#818cf8" opacity="0.6"/>
+      <circle cx="62" cy="194" r="3" fill="#a78bfa" opacity="0.5"/>
+      <circle cx="158" cy="193" r="3" fill="#a78bfa" opacity="0.5"/>
+      <line x1="36" y1="120" x2="18" y2="85" stroke="#6366f1" stroke-width="0.8" opacity="0.35"/>
+      <line x1="184" y1="120" x2="200" y2="85" stroke="#8b5cf6" stroke-width="0.8" opacity="0.35"/>
+      <line x1="80" y1="172" x2="62" y2="194" stroke="#6366f1" stroke-width="0.8" opacity="0.35"/>
+      <line x1="146" y1="170" x2="158" y2="193" stroke="#6366f1" stroke-width="0.8" opacity="0.35"/>
+
+      <!-- CENTER glow -->
+      <circle cx="110" cy="110" r="36" fill="rgba(99,102,241,0.15)"/>
+      <circle cx="110" cy="110" r="28" fill="#4f46e5" opacity="0.95"/>
+      <circle cx="110" cy="110" r="36" fill="none" stroke="#818cf8" stroke-width="1.2" opacity="0.6"/>
+      <!-- center person -->
+      <circle cx="110" cy="103" r="8" fill="#fff" opacity="0.95"/>
+      <ellipse cx="110" cy="124" rx="11.5" ry="7" fill="#fff" opacity="0.85"/>
+
+      <!-- TOP LEFT node -->
+      <circle cx="52" cy="58" r="20" fill="#6366f1" opacity="0.9"/>
+      <circle cx="52" cy="58" r="25" fill="none" stroke="#818cf8" stroke-width="0.8" opacity="0.4"/>
+      <circle cx="52" cy="52" r="6" fill="#fff" opacity="0.9"/>
+      <ellipse cx="52" cy="67" rx="8.5" ry="5" fill="#fff" opacity="0.8"/>
+
+      <!-- TOP RIGHT node -->
+      <circle cx="168" cy="58" r="20" fill="#7c3aed" opacity="0.9"/>
+      <circle cx="168" cy="58" r="25" fill="none" stroke="#a78bfa" stroke-width="0.8" opacity="0.4"/>
+      <circle cx="168" cy="52" r="6" fill="#fff" opacity="0.9"/>
+      <ellipse cx="168" cy="67" rx="8.5" ry="5" fill="#fff" opacity="0.8"/>
+
+      <!-- LEFT node -->
+      <circle cx="36" cy="120" r="14" fill="#8b5cf6" opacity="0.85"/>
+      <circle cx="36" cy="115" r="4.2" fill="#fff" opacity="0.9"/>
+      <ellipse cx="36" cy="126" rx="6" ry="3.6" fill="#fff" opacity="0.8"/>
+
+      <!-- RIGHT node -->
+      <circle cx="184" cy="120" r="14" fill="#6366f1" opacity="0.85"/>
+      <circle cx="184" cy="115" r="4.2" fill="#fff" opacity="0.9"/>
+      <ellipse cx="184" cy="126" rx="6" ry="3.6" fill="#fff" opacity="0.8"/>
+
+      <!-- BOTTOM LEFT node -->
+      <circle cx="80" cy="172" r="14" fill="#7c3aed" opacity="0.8"/>
+      <circle cx="80" cy="167" r="4.2" fill="#fff" opacity="0.9"/>
+      <ellipse cx="80" cy="178" rx="6" ry="3.6" fill="#fff" opacity="0.8"/>
+
+      <!-- BOTTOM RIGHT node -->
+      <circle cx="146" cy="170" r="12" fill="#8b5cf6" opacity="0.75"/>
+      <circle cx="146" cy="165" r="3.6" fill="#fff" opacity="0.9"/>
+      <ellipse cx="146" cy="176" rx="5.2" ry="3" fill="#fff" opacity="0.8"/>
+
+      <!-- Orion belt stars (3 dots) -->
+      <circle cx="98" cy="110" r="2" fill="#e0e7ff" opacity="0.9"/>
+      <circle cx="110" cy="110" r="2" fill="#e0e7ff" opacity="0.9"/>
+      <circle cx="122" cy="110" r="2" fill="#e0e7ff" opacity="0.9"/>
+    </svg>
+  </div>
+
+  <div class="badge-row">
+    <span class="badge"><i class="ti ti-shield-check"></i> Secure</span>
+    <span class="badge"><i class="ti ti-bolt"></i> AI-Powered</span>
+    <span class="badge"><i class="ti ti-globe"></i> 360° View</span>
+  </div>
+</div>
+
+<!-- RIGHT: Form panel -->
+<div class="right">
+  <div class="form-inner">
+    <p class="welcome-h">Welcome Back</p>
+    <p class="welcome-s">Sign in to your Orion CX account</p>
+
+    <label class="field-lbl">Email</label>
+    <div class="field-grp">
+      <input type="email" placeholder="you@company.com" value="you@company.com"/>
+    </div>
+
+    <label class="field-lbl">Password</label>
+    <div class="field-grp">
+      <input type="password" id="pwd" value="password123"/>
+      <i class="ti ti-eye eye-icon" id="eyeBtn"></i>
+    </div>
+
+    <div class="forgot-row"><a href="#">Forgot password?</a></div>
+
+    <button class="signin-btn">Sign In</button>
+
+    <div class="divider"><hr/><span>or sign in with</span><hr/></div>
+
+    <div class="social-row">
+      <div class="social-btn" title="Google">
+        <svg width="22" height="22" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.3 0 5.9 1.1 7.9 2.9l5.9-5.9C34.1 3.4 29.4 1.5 24 1.5 14.9 1.5 7.2 7 3.7 14.8l6.9 5.4C12.2 14 17.6 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4.1 7.1-10.1 7.1-17.1z"/>
+          <path fill="#FBBC05" d="M10.6 28.8A14.5 14.5 0 0 1 9.5 24c0-1.7.3-3.3.9-4.8l-6.9-5.4A22.5 22.5 0 0 0 1.5 24c0 3.6.8 7 2.3 10.1l6.8-5.3z"/>
+          <path fill="#34A853" d="M24 46.5c5.4 0 10-1.8 13.3-4.9l-7.6-5.9c-1.8 1.2-4.1 1.9-5.7 1.9-6.4 0-11.8-4.3-13.5-10.1l-6.8 5.3C7.1 40.9 14.9 46.5 24 46.5z"/>
+        </svg>
+      </div>
+      <div class="social-btn" title="Microsoft">
+        <svg width="22" height="22" viewBox="0 0 21 21">
+          <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
+          <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
+          <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
+          <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
+        </svg>
+      </div>
+    </div>
+
+    <p class="role-lbl">Select your role</p>
+    <div class="roles-grid">
+      <div class="role-card" onclick="setRole(this)">
+        <div class="role-icon"><i class="ti ti-shield-half"></i></div>
+        <p class="role-card-t">Admin</p>
+        <p class="role-card-s">Full access</p>
+      </div>
+      <div class="role-card" onclick="setRole(this)">
+        <div class="role-icon"><i class="ti ti-chart-line"></i></div>
+        <p class="role-card-t">Sales Executive</p>
+        <p class="role-card-s">Pipeline &amp; Accounts</p>
+      </div>
+      <div class="role-card active" onclick="setRole(this)">
+        <div class="role-icon"><i class="ti ti-users"></i></div>
+        <p class="role-card-t">Account Manager</p>
+        <p class="role-card-s">Manage Customers</p>
+      </div>
+      <div class="role-card" onclick="setRole(this)">
+        <div class="role-icon"><i class="ti ti-headset"></i></div>
+        <p class="role-card-t">Support Agent</p>
+        <p class="role-card-s">Support &amp; Tickets</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setRole(el) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+  document.getElementById('eyeBtn').addEventListener('click', function () {
+    const pwd = document.getElementById('pwd');
+    if (pwd.type === 'password') {
+      pwd.type = 'text';
+      this.classList.replace('ti-eye', 'ti-eye-off');
+    } else {
+      pwd.type = 'password';
+      this.classList.replace('ti-eye-off', 'ti-eye');
+    }
+  });
+</script>
+
+</body>
+</html>
