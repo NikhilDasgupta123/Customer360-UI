@@ -2,18 +2,34 @@ import './LoginPage.css';
 import { USER_ROLES } from '../data/roles.js';
 import { useLoginForm } from '../logic/useLoginForm.js';
 
+const REQUEST_ACCESS_ROLES = USER_ROLES.filter((role) => role.id !== 'admin');
+
 export default function LoginPage() {
   const {
+    authMode,
     email,
     password,
+    confirmPassword,
+    fullName,
+    team,
     selectedRole,
     showPassword,
+    authFeedback,
+    isSubmitting,
     setEmail,
     setPassword,
+    setConfirmPassword,
+    setFullName,
+    setTeam,
     setSelectedRole,
     togglePassword,
+    switchToRequestAccess,
+    switchToLogin,
     handleSubmit,
   } = useLoginForm();
+
+  const isRequestAccess = authMode === 'request-access';
+  const visibleRoles = isRequestAccess ? REQUEST_ACCESS_ROLES : USER_ROLES;
 
   return (
     <>
@@ -95,12 +111,43 @@ export default function LoginPage() {
         </div>
       </div>
 
+
       <div className="right">
         <form className="form-inner" onSubmit={handleSubmit}>
-          <p className="welcome-h">Welcome Back</p>
-          <p className="welcome-s">Sign in to your Orion CX account</p>
+          <div className="mode-pill">
+            <i className={`ti ${isRequestAccess ? 'ti-user-plus' : 'ti-lock'}`}></i>
+            {isRequestAccess ? 'Request access mode' : 'Secure login mode'}
+          </div>
 
-          <label className="field-lbl">Email</label>
+          <p className="welcome-h">{isRequestAccess ? 'Request Access' : 'Welcome Back'}</p>
+          <p className="welcome-s">
+            {isRequestAccess
+              ? 'Submit an access request. Your account will be activated after admin approval.'
+              : 'Sign in to your Orion CX account'}
+          </p>
+
+          {authFeedback && (
+            <div className={`auth-alert ${authFeedback.type}`}>
+              <i className={`ti ${authFeedback.type === 'success' ? 'ti-circle-check' : 'ti-alert-circle'}`}></i>
+              <span>{authFeedback.message}</span>
+            </div>
+          )}
+
+          {isRequestAccess && (
+            <>
+              <label className="field-lbl">Full Name</label>
+              <div className="field-grp">
+                <input
+                  type="text"
+                  placeholder="Your full name"
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                />
+              </div>
+            </>
+          )}
+
+          <label className="field-lbl">{isRequestAccess ? 'Work Email' : 'Email'}</label>
           <div className="field-grp">
             <input
               type="email"
@@ -130,34 +177,71 @@ export default function LoginPage() {
             ></i>
           </div>
 
-          <div className="forgot-row"><a href="#">Forgot password?</a></div>
+          {isRequestAccess && (
+            <>
+              <label className="field-lbl">Confirm Password</label>
+              <div className="field-grp">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                />
+              </div>
 
-          <button className="signin-btn" type="submit">Sign In</button>
+              <label className="field-lbl">Company / Team</label>
+              <div className="field-grp">
+                <input
+                  type="text"
+                  placeholder="Sales, Support, CX Team..."
+                  value={team}
+                  onChange={(event) => setTeam(event.target.value)}
+                />
+              </div>
+            </>
+          )}
 
-          <div className="divider"><hr /><span>or sign in with</span><hr /></div>
+          {!isRequestAccess && <div className="forgot-row"><a href="#">Forgot password?</a></div>}
 
-          <div className="social-row">
-            <div className="social-btn" title="Google">
-              <svg width="22" height="22" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.3 0 5.9 1.1 7.9 2.9l5.9-5.9C34.1 3.4 29.4 1.5 24 1.5 14.9 1.5 7.2 7 3.7 14.8l6.9 5.4C12.2 14 17.6 9.5 24 9.5z" />
-                <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4.1 7.1-10.1 7.1-17.1z" />
-                <path fill="#FBBC05" d="M10.6 28.8A14.5 14.5 0 0 1 9.5 24c0-1.7.3-3.3.9-4.8l-6.9-5.4A22.5 22.5 0 0 0 1.5 24c0 3.6.8 7 2.3 10.1l6.8-5.3z" />
-                <path fill="#34A853" d="M24 46.5c5.4 0 10-1.8 13.3-4.9l-7.6-5.9c-1.8 1.2-4.1 1.9-5.7 1.9-6.4 0-11.8-4.3-13.5-10.1l-6.8 5.3C7.1 40.9 14.9 46.5 24 46.5z" />
-              </svg>
+          <button className="signin-btn" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Please wait...' : isRequestAccess ? 'Submit Access Request' : 'Sign In'}
+          </button>
+
+          {!isRequestAccess && (
+            <>
+              <div className="divider"><hr /><span>or sign in with</span><hr /></div>
+
+              <div className="social-row">
+                <div className="social-btn" title="Google">
+                  <svg width="22" height="22" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.3 0 5.9 1.1 7.9 2.9l5.9-5.9C34.1 3.4 29.4 1.5 24 1.5 14.9 1.5 7.2 7 3.7 14.8l6.9 5.4C12.2 14 17.6 9.5 24 9.5z" />
+                    <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4.1 7.1-10.1 7.1-17.1z" />
+                    <path fill="#FBBC05" d="M10.6 28.8A14.5 14.5 0 0 1 9.5 24c0-1.7.3-3.3.9-4.8l-6.9-5.4A22.5 22.5 0 0 0 1.5 24c0 3.6.8 7 2.3 10.1l6.8-5.3z" />
+                    <path fill="#34A853" d="M24 46.5c5.4 0 10-1.8 13.3-4.9l-7.6-5.9c-1.8 1.2-4.1 1.9-5.7 1.9-6.4 0-11.8-4.3-13.5-10.1l-6.8 5.3C7.1 40.9 14.9 46.5 24 46.5z" />
+                  </svg>
+                </div>
+                <div className="social-btn" title="Microsoft">
+                  <svg width="22" height="22" viewBox="0 0 21 21">
+                    <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+                    <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+                    <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+                    <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+                  </svg>
+                </div>
+              </div>
+            </>
+          )}
+
+          <p className="role-lbl">{isRequestAccess ? 'Select requested role' : 'Select your role'}</p>
+          {isRequestAccess && (
+            <div className="request-note">
+              <i className="ti ti-info-circle"></i>
+              Admin access cannot be requested from this screen. Admin users must be created from the backend or admin panel.
             </div>
-            <div className="social-btn" title="Microsoft">
-              <svg width="22" height="22" viewBox="0 0 21 21">
-                <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-                <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-                <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
-                <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
-              </svg>
-            </div>
-          </div>
+          )}
 
-          <p className="role-lbl">Select your role</p>
           <div className="roles-grid">
-            {USER_ROLES.map((role) => (
+            {visibleRoles.map((role) => (
               <div
                 key={role.id}
                 className={`role-card ${selectedRole === role.id ? 'active' : ''}`}
@@ -169,6 +253,17 @@ export default function LoginPage() {
               </div>
             ))}
           </div>
+
+          <p className="switch-auth">
+            {isRequestAccess ? 'Already have an account?' : 'Don’t have an account?'}
+            <button
+              type="button"
+              className="link-button"
+              onClick={isRequestAccess ? switchToLogin : switchToRequestAccess}
+            >
+              {isRequestAccess ? 'Back to Login' : 'Request Access'}
+            </button>
+          </p>
         </form>
       </div>
     </>
