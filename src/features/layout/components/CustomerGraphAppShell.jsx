@@ -16,7 +16,37 @@ const NAV_ITEMS = [
   { key: 'chat', label: 'AI Chat', icon: 'chat', roles: ['admin', 'sales_executive', 'account_manager', 'support_agent'] },
   { key: 'approvals', label: 'Approvals', icon: 'approvals', roles: ['admin', 'account_manager'] },
   { key: 'admin', label: 'Admin', path: '/admin/users', icon: 'admin', roles: ['admin'] },
-  { key: 'settings', label: 'Settings', icon: 'settings', roles: ['admin'] },
+  { key: 'settings', label: 'Settings', path: '/settings', icon: 'settings', roles: ['admin'] },
+];
+
+const INITIAL_NOTIFICATIONS = [
+  {
+    id: 'high-risk-accounts',
+    title: 'High-risk accounts need attention',
+    message: 'Six customers are currently marked high or critical risk.',
+    time: 'Just now',
+    unread: true,
+    tone: 'critical',
+    path: '/customers?risk_level=high',
+  },
+  {
+    id: 'critical-tickets',
+    title: 'Critical tickets are open',
+    message: 'Four critical support tickets remain unresolved.',
+    time: '18 min ago',
+    unread: true,
+    tone: 'warning',
+    path: '/customers',
+  },
+  {
+    id: 'renewals',
+    title: 'Renewals due in the next 30 days',
+    message: 'Review seven upcoming renewals before their due dates.',
+    time: 'Today',
+    unread: true,
+    tone: 'info',
+    path: '/customers?renewal_within_days=30',
+  },
 ];
 
 function initials(value) {
@@ -52,14 +82,13 @@ function Icon({ name, size = 17 }) {
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
     logout: <><path d="M10 17l5-5-5-5" /><path d="M15 12H3" /><path d="M21 3v18" /></>,
+    check: <path d="m5 12 4.2 4.2L19 6.5" />,
   };
   return <svg {...common}>{paths[name] || paths.dashboard}</svg>;
 }
 
 export default function CustomerGraphAppShell({
   activeNav,
-  screenCode,
-  screenTitle,
   children,
   contentMode = 'scrollable',
 }) {
@@ -67,37 +96,43 @@ export default function CustomerGraphAppShell({
   const [query, setQuery] = useState('');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const profileMenuRef = useRef(null);
+  const notificationMenuRef = useRef(null);
   const allowedItems = useMemo(
     () => NAV_ITEMS.filter((item) => item.roles.includes(session?.role || '')),
     [session?.role],
   );
+  const unreadCount = notifications.filter((notification) => notification.unread).length;
+  const canManageSettings = session?.role === 'admin';
 
   useEffect(() => {
     const closeOverlays = (event) => {
       if (event.key === 'Escape') {
         setIsMobileNavOpen(false);
         setIsProfileMenuOpen(false);
+        setIsNotificationMenuOpen(false);
       }
     };
 
-    const closeProfileOnOutsidePointer = (event) => {
-      if (!profileMenuRef.current?.contains(event.target)) {
-        setIsProfileMenuOpen(false);
-      }
+    const closeMenusOnOutsidePointer = (event) => {
+      if (!profileMenuRef.current?.contains(event.target)) setIsProfileMenuOpen(false);
+      if (!notificationMenuRef.current?.contains(event.target)) setIsNotificationMenuOpen(false);
     };
 
     window.addEventListener('keydown', closeOverlays);
-    window.addEventListener('pointerdown', closeProfileOnOutsidePointer);
+    window.addEventListener('pointerdown', closeMenusOnOutsidePointer);
     return () => {
       window.removeEventListener('keydown', closeOverlays);
-      window.removeEventListener('pointerdown', closeProfileOnOutsidePointer);
+      window.removeEventListener('pointerdown', closeMenusOnOutsidePointer);
     };
   }, []);
 
   const goTo = (item) => {
     setIsMobileNavOpen(false);
     setIsProfileMenuOpen(false);
+    setIsNotificationMenuOpen(false);
     if (item.path) navigateTo(item.path);
   };
 
@@ -106,6 +141,7 @@ export default function CustomerGraphAppShell({
     const term = query.trim();
     setIsMobileNavOpen(false);
     setIsProfileMenuOpen(false);
+    setIsNotificationMenuOpen(false);
     navigateTo(term ? `/customers?search=${encodeURIComponent(term)}` : '/customers');
   };
 
@@ -114,15 +150,22 @@ export default function CustomerGraphAppShell({
     logoutCustomerGraph();
   };
 
+  const handleNotificationClick = (notification) => {
+    setNotifications((items) => items.map((item) => (
+      item.id === notification.id ? { ...item, unread: false } : item
+    )));
+    setIsNotificationMenuOpen(false);
+    navigateTo(notification.path);
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications((items) => items.map((item) => ({ ...item, unread: false })));
+  };
+
   const profileName = session?.fullName || session?.email || 'CustomerGraph user';
 
   return (
     <main className="cg-shell">
-      <header className="cg-screen-titlebar">
-        <span className="cg-screen-code">{screenCode}</span>
-        <h1>{screenTitle}</h1>
-      </header>
-
       <div className="cg-shell-body">
         <button
           type="button"
@@ -178,13 +221,68 @@ export default function CustomerGraphAppShell({
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search customers, accounts, tickets..." aria-label="Search customers, accounts, tickets" />
             </form>
             <div className="cg-top-actions">
-              <button type="button" className="cg-icon-button" title="Notifications" aria-label="Notifications"><Icon name="bell" size={17} /></button>
-              <button type="button" className="cg-icon-button cg-settings-button" title="Settings" aria-label="Settings"><Icon name="settings" size={16} /></button>
+              <div ref={notificationMenuRef} className="cg-notification-menu-wrap">
+                <button
+                  type="button"
+                  className={`cg-icon-button cg-notification-button ${unreadCount ? 'has-unread' : ''}`}
+                  title="Notifications"
+                  aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
+                  aria-haspopup="dialog"
+                  aria-expanded={isNotificationMenuOpen}
+                  onClick={() => {
+                    setIsNotificationMenuOpen((isOpen) => !isOpen);
+                    setIsProfileMenuOpen(false);
+                  }}
+                >
+                  <Icon name="bell" size={17} />
+                </button>
+                {isNotificationMenuOpen && (
+                  <section className="cg-notification-menu" role="dialog" aria-label="Notifications">
+                    <header className="cg-notification-menu-header">
+                      <div>
+                        <h2>Notifications</h2>
+                        <p>{unreadCount ? `${unreadCount} unread` : 'All caught up'}</p>
+                      </div>
+                      {unreadCount ? (
+                        <button type="button" onClick={markAllNotificationsRead}>Mark all read</button>
+                      ) : null}
+                    </header>
+                    <div className="cg-notification-list">
+                      {notifications.map((notification) => (
+                        <button
+                          key={notification.id}
+                          type="button"
+                          className={`cg-notification-row ${notification.unread ? 'is-unread' : ''}`}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <span className={`cg-notification-status ${notification.tone}`} aria-hidden="true" />
+                          <span className="cg-notification-copy">
+                            <strong>{notification.title}</strong>
+                            <span>{notification.message}</span>
+                            <small>{notification.time}</small>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" className="cg-notification-footer" onClick={() => { setIsNotificationMenuOpen(false); navigateTo('/customers?risk_level=high'); }}>
+                      Review customer risk
+                    </button>
+                  </section>
+                )}
+              </div>
+              {canManageSettings ? (
+                <button type="button" className="cg-icon-button cg-settings-button" title="Settings" aria-label="Open settings" onClick={() => navigateTo('/settings')}>
+                  <Icon name="settings" size={16} />
+                </button>
+              ) : null}
               <div ref={profileMenuRef} className="cg-profile-menu-wrap">
                 <button
                   type="button"
                   className="cg-profile-button"
-                  onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+                  onClick={() => {
+                    setIsProfileMenuOpen((isOpen) => !isOpen);
+                    setIsNotificationMenuOpen(false);
+                  }}
                   title="Open profile menu"
                   aria-label="Open profile menu"
                   aria-haspopup="menu"

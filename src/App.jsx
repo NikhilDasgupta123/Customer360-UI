@@ -3,6 +3,7 @@ import LoginPage from './features/auth/components/LoginPage.jsx';
 import AdminUserManagementPage from './features/admin/components/AdminUserManagementPage.jsx';
 import MainDashboardPage from './features/dashboard/components/MainDashboardPage.jsx';
 import CustomerDirectoryPage from './features/auth/components/CustomerDirectoryPage.jsx';
+import SettingsPage from './features/settings/components/SettingsPage.jsx';
 import { getCustomerGraphSession } from './features/auth/logic/authService.js';
 
 function getCurrentPath() {
@@ -30,6 +31,7 @@ export default function App() {
   if (!session?.accessToken) return <LoginPage />;
 
   if (path === '/customers') return <CustomerDirectoryPage />;
+  if (path === '/settings' && session.role === 'admin') return <SettingsPage />;
   if (isAdminRoute(path) && session.role === 'admin') return <AdminUserManagementPage />;
 
   // Dashboard is the default authenticated landing page. Unsupported/deep links
