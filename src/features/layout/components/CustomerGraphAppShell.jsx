@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './CustomerGraphAppShell.css';
 import {
   getCustomerGraphSession,
@@ -51,29 +51,53 @@ function Icon({ name, size = 17 }) {
     search: <><circle cx="10.5" cy="10.5" r="6" /><path d="m15 15 5 5" /></>,
     menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
+    logout: <><path d="M10 17l5-5-5-5" /><path d="M15 12H3" /><path d="M21 3v18" /></>,
   };
   return <svg {...common}>{paths[name] || paths.dashboard}</svg>;
 }
 
-export default function CustomerGraphAppShell({ activeNav, screenCode, screenTitle, children }) {
+export default function CustomerGraphAppShell({
+  activeNav,
+  screenCode,
+  screenTitle,
+  children,
+  contentMode = 'scrollable',
+}) {
   const session = getCustomerGraphSession();
   const [query, setQuery] = useState('');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
   const allowedItems = useMemo(
     () => NAV_ITEMS.filter((item) => item.roles.includes(session?.role || '')),
     [session?.role],
   );
 
   useEffect(() => {
-    const closeOnEscape = (event) => {
-      if (event.key === 'Escape') setIsMobileNavOpen(false);
+    const closeOverlays = (event) => {
+      if (event.key === 'Escape') {
+        setIsMobileNavOpen(false);
+        setIsProfileMenuOpen(false);
+      }
     };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
+
+    const closeProfileOnOutsidePointer = (event) => {
+      if (!profileMenuRef.current?.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', closeOverlays);
+    window.addEventListener('pointerdown', closeProfileOnOutsidePointer);
+    return () => {
+      window.removeEventListener('keydown', closeOverlays);
+      window.removeEventListener('pointerdown', closeProfileOnOutsidePointer);
+    };
   }, []);
 
   const goTo = (item) => {
     setIsMobileNavOpen(false);
+    setIsProfileMenuOpen(false);
     if (item.path) navigateTo(item.path);
   };
 
@@ -81,8 +105,16 @@ export default function CustomerGraphAppShell({ activeNav, screenCode, screenTit
     event.preventDefault();
     const term = query.trim();
     setIsMobileNavOpen(false);
+    setIsProfileMenuOpen(false);
     navigateTo(term ? `/customers?search=${encodeURIComponent(term)}` : '/customers');
   };
+
+  const handleLogout = () => {
+    setIsProfileMenuOpen(false);
+    logoutCustomerGraph();
+  };
+
+  const profileName = session?.fullName || session?.email || 'CustomerGraph user';
 
   return (
     <main className="cg-shell">
@@ -129,7 +161,7 @@ export default function CustomerGraphAppShell({ activeNav, screenCode, screenTit
           </button>
         </aside>
 
-        <section className="cg-main-area">
+        <section className={`cg-main-area ${contentMode === 'fixed' ? 'is-fixed' : ''}`}>
           <header className="cg-topbar">
             <button
               type="button"
@@ -148,9 +180,36 @@ export default function CustomerGraphAppShell({ activeNav, screenCode, screenTit
             <div className="cg-top-actions">
               <button type="button" className="cg-icon-button" title="Notifications" aria-label="Notifications"><Icon name="bell" size={17} /></button>
               <button type="button" className="cg-icon-button cg-settings-button" title="Settings" aria-label="Settings"><Icon name="settings" size={16} /></button>
-              <button type="button" className="cg-profile-button" onClick={logoutCustomerGraph} title="Log out" aria-label="Log out">
-                {initials(session?.fullName || session?.email)}
-              </button>
+              <div ref={profileMenuRef} className="cg-profile-menu-wrap">
+                <button
+                  type="button"
+                  className="cg-profile-button"
+                  onClick={() => setIsProfileMenuOpen((isOpen) => !isOpen)}
+                  title="Open profile menu"
+                  aria-label="Open profile menu"
+                  aria-haspopup="menu"
+                  aria-expanded={isProfileMenuOpen}
+                >
+                  {initials(profileName)}
+                </button>
+                {isProfileMenuOpen && (
+                  <div className="cg-profile-menu" role="menu" aria-label="Profile menu">
+                    <div className="cg-profile-menu-user">
+                      <span className="cg-profile-menu-avatar">{initials(profileName)}</span>
+                      <div>
+                        <strong>{profileName}</strong>
+                        <span>{session?.email || 'Signed in user'}</span>
+                        <small>{session?.roleLabel || session?.role || 'User'}</small>
+                      </div>
+                    </div>
+                    <div className="cg-profile-menu-divider" />
+                    <button type="button" className="cg-profile-logout" role="menuitem" onClick={handleLogout}>
+                      <Icon name="logout" size={16} />
+                      <span>Log out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </header>
           {children}

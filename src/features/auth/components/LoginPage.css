@@ -1,214 +1,325 @@
-    /* ── LEFT PANEL – deep space ── */
-    .left {
-      flex: 1;
-      background: #050a1a;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1.8rem;
-      padding: 3rem 2.5rem;
-      position: relative;
-      overflow: hidden;
-    }
+/* Orion CX login — self-contained two-panel layout.
+   The wrapper prevents dashboard-level responsive styles from stacking these panels on desktop. */
+.login-page {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
 
-    /* star dots */
-    .left::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        radial-gradient(1.5px 1.5px at 12% 18%, #fff 0%, transparent 100%),
-        radial-gradient(1px 1px at 28% 72%, rgba(255,255,255,0.7) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 44% 35%, rgba(255,255,255,0.9) 0%, transparent 100%),
-        radial-gradient(1px 1px at 58% 85%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(2px 2px at 70% 22%, rgba(255,255,255,0.8) 0%, transparent 100%),
-        radial-gradient(1px 1px at 82% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 92% 40%, rgba(255,255,255,0.7) 0%, transparent 100%),
-        radial-gradient(1px 1px at 18% 90%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 36% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 64% 8%, rgba(255,255,255,0.8) 0%, transparent 100%),
-        radial-gradient(1px 1px at 76% 78%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(2px 2px at 8% 48%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 88% 92%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 50% 65%, rgba(200,220,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 22% 30%, rgba(200,220,255,0.5) 0%, transparent 100%);
-      pointer-events: none;
-    }
+/* ── LEFT PANEL – deep space ── */
+.login-page .left {
+  flex: 1 1 50%;
+  min-width: 0;
+  min-height: 0;
+  background: #050a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.8rem;
+  padding: 3rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+}
 
-    /* nebula glow behind graph */
-    .left::after {
-      content: '';
-      position: absolute;
-      width: 420px; height: 420px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.10) 40%, transparent 70%);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
+/* star dots */
+.login-page .left::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 28% 72%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 44% 35%, rgba(255,255,255,0.9) 0%, transparent 100%),
+    radial-gradient(1px 1px at 58% 85%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 70% 22%, rgba(255,255,255,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 82% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 92% 40%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 18% 90%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 36% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 64% 8%, rgba(255,255,255,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 76% 78%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(2px 2px at 8% 48%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 92%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 50% 65%, rgba(200,220,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 22% 30%, rgba(200,220,255,0.5) 0%, transparent 100%);
+  pointer-events: none;
+}
 
-    .brand-content { position: relative; z-index: 1; text-align: center; }
+/* nebula glow behind graph */
+.login-page .left::after {
+  content: '';
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.10) 40%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
 
-    .brand-row { display: flex; align-items: center; gap: 13px; justify-content: center; margin-bottom: 10px; }
+.login-page .brand-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
 
-    .brand-icon {
-      width: 46px; height: 46px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 20px rgba(139,92,246,0.5);
-    }
-    .brand-icon i { font-size: 24px; color: #fff; }
+.login-page .brand-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
 
-    .brand-name {
-      font-size: 22px; font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.5px;
-    }
-    .brand-name span { color: #a78bfa; }
+.login-page .brand-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(139,92,246,0.5);
+}
 
-    .brand-tagline {
-      font-size: 13px;
-      color: rgba(255,255,255,0.5);
-      letter-spacing: 0.3px;
-      line-height: 1.6;
-    }
+.login-page .brand-icon i { font-size: 24px; color: #fff; }
 
-    .network-wrap { position: relative; z-index: 1; }
-    .network-svg {
-      width: min(300px, 52vw);
-      height: min(300px, 52vw);
-      filter: drop-shadow(0 0 18px rgba(139,92,246,0.35));
-    }
+.login-page .brand-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
 
-    .badge-row {
-      display: flex; gap: 10px; position: relative; z-index: 1;
-    }
-    .badge {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 20px;
-      padding: 5px 14px;
-      font-size: 11.5px;
-      color: rgba(255,255,255,0.55);
-      display: flex; align-items: center; gap: 5px;
-    }
-    .badge i { font-size: 13px; color: #a78bfa; }
+.login-page .brand-name span { color: #a78bfa; }
 
-    /* ── RIGHT PANEL ── */
-    .right {
-      flex: 1;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 2.5rem;
-      overflow-y: auto;
-    }
+.login-page .brand-tagline {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.3px;
+  line-height: 1.6;
+}
 
-    .form-inner { width: 100%; max-width: 390px; }
+.login-page .network-wrap { position: relative; z-index: 1; }
 
-    .welcome-h {
-      font-size: 25px; font-weight: 700;
-      color: #0f172a; text-align: center; margin-bottom: 4px;
-    }
-    .welcome-s {
-      font-size: 13px; color: #94a3b8;
-      text-align: center; margin-bottom: 2rem;
-    }
+.login-page .network-svg {
+  display: block;
+  width: min(300px, 36vw);
+  height: min(300px, 36vw);
+  filter: drop-shadow(0 0 18px rgba(139,92,246,0.35));
+}
 
-    .field-lbl {
-      font-size: 12.5px; color: #475569;
-      margin-bottom: 6px; display: block; font-weight: 500;
-    }
+.login-page .badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
 
-    .field-grp { position: relative; margin-bottom: 16px; }
-    .field-grp input {
-      width: 100%;
-      padding: 11px 38px 11px 14px;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 10px;
-      font-size: 14px; color: #334155;
-      background: #f8fafc; outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .field-grp input:focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
-      background: #fff;
-    }
-    .eye-icon {
-      position: absolute; right: 12px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 17px; color: #94a3b8; cursor: pointer;
-    }
+.login-page .badge {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.55);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
 
-    .forgot-row { text-align: right; margin: -10px 0 16px; }
-    .forgot-row a { font-size: 12.5px; color: #6366f1; text-decoration: none; }
-    .forgot-row a:hover { text-decoration: underline; }
+.login-page .badge i { font-size: 13px; color: #a78bfa; }
 
-    .signin-btn {
-      width: 100%; padding: 12px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff; border: none; border-radius: 10px;
-      font-size: 15px; font-weight: 600;
-      cursor: pointer; margin-bottom: 1.2rem;
-      box-shadow: 0 4px 15px rgba(99,102,241,0.35);
-      transition: opacity 0.15s, transform 0.1s;
-    }
-    .signin-btn:hover { opacity: 0.92; }
-    .signin-btn:active { transform: scale(0.99); }
+/* ── RIGHT PANEL ── */
+.login-page .right {
+  flex: 1 1 50%;
+  min-width: 0;
+  min-height: 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2.5rem;
+  overflow-y: auto;
+}
 
-    .divider {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 14px;
-    }
-    .divider hr { flex: 1; border: none; border-top: 1px solid #e2e8f0; }
-    .divider span { font-size: 12px; color: #94a3b8; white-space: nowrap; }
+.login-page .form-inner { width: 100%; max-width: 390px; }
 
-    .social-row {
-      display: flex; justify-content: center; gap: 14px;
-      margin-bottom: 1.6rem;
-    }
-    .social-btn {
-      width: 48px; height: 48px;
-      border: 1.5px solid #e2e8f0; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; background: #fff;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .social-btn:hover {
-      border-color: #a5b4fc;
-      box-shadow: 0 2px 10px rgba(99,102,241,0.12);
-    }
+.login-page .welcome-h {
+  font-size: 25px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  margin-bottom: 4px;
+}
 
-    @media (max-width: 680px) {
-      #root { flex-direction: column; overflow: auto; height: auto; }
-      body { overflow: auto; height: auto; }
-      .left { padding: 2.5rem 1.5rem 2rem; min-height: 55vh; }
-      .network-svg { width: min(230px, 68vw); height: min(230px, 68vw); }
-      .right { padding: 2.5rem 1.5rem 3rem; }
-      .form-inner { max-width: 100%; }
-    }
+.login-page .welcome-s {
+  font-size: 13px;
+  color: #94a3b8;
+  text-align: center;
+  margin-bottom: 2rem;
+}
 
-    /* ── LARGE ── */
-    @media (min-width: 1400px) {
-      .brand-name { font-size: 26px; }
-      .network-svg { width: 340px; height: 340px; }
-      .welcome-h { font-size: 28px; }
-      .form-inner { max-width: 420px; }
-    }
-  
-.login-message {
+.login-page .field-lbl {
+  font-size: 12.5px;
+  color: #475569;
+  margin-bottom: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+.login-page .field-grp { position: relative; margin-bottom: 16px; }
+
+.login-page .field-grp input {
+  width: 100%;
+  padding: 11px 38px 11px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #334155;
+  background: #f8fafc;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.login-page .field-grp input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  background: #fff;
+}
+
+.login-page .eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 17px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.login-page .forgot-row { text-align: right; margin: -10px 0 16px; }
+.login-page .forgot-row a { font-size: 12.5px; color: #6366f1; text-decoration: none; }
+.login-page .forgot-row a:hover { text-decoration: underline; }
+
+.login-page .signin-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 4px 15px rgba(99,102,241,0.35);
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.login-page .signin-btn:hover { opacity: 0.92; }
+.login-page .signin-btn:active { transform: scale(0.99); }
+.login-page .signin-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+.login-page .divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.login-page .divider hr { flex: 1; border: none; border-top: 1px solid #e2e8f0; }
+.login-page .divider span { font-size: 12px; color: #94a3b8; white-space: nowrap; }
+
+.login-page .social-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 1.6rem;
+}
+
+.login-page .social-btn {
+  width: 48px;
+  height: 48px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.login-page .social-btn:hover {
+  border-color: #a5b4fc;
+  box-shadow: 0 2px 10px rgba(99,102,241,0.12);
+}
+
+.login-page .login-message {
   margin: -6px 0 14px;
   text-align: center;
   font-size: 12.5px;
   color: #4f46e5;
 }
 
-.signin-btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
+/* Tablet: preserve the original two-panel sign-in layout, but give each panel enough room. */
+@media (max-width: 980px) and (min-width: 681px) {
+  .login-page .left,
+  .login-page .right { padding: 2.25rem 1.75rem; }
+
+  .login-page .network-svg {
+    width: min(245px, 38vw);
+    height: min(245px, 38vw);
+  }
+
+  .login-page .badge { padding-inline: 10px; }
+}
+
+/* Mobile: stack deliberately and allow the browser page to scroll. */
+@media (max-width: 680px) {
+  .login-page {
+    flex-direction: column;
+    min-height: 100dvh;
+    height: auto;
+    overflow: visible;
+  }
+
+  .login-page .left {
+    flex: 0 0 auto;
+    min-height: 430px;
+    padding: 2.5rem 1.5rem 2rem;
+  }
+
+  .login-page .network-svg {
+    width: min(230px, 68vw);
+    height: min(230px, 68vw);
+  }
+
+  .login-page .right {
+    flex: 0 0 auto;
+    min-height: auto;
+    padding: 2.5rem 1.5rem 3rem;
+    overflow: visible;
+  }
+
+  .login-page .form-inner { max-width: 100%; }
+}
+
+@media (min-width: 1400px) {
+  .login-page .brand-name { font-size: 26px; }
+  .login-page .network-svg { width: 340px; height: 340px; }
+  .login-page .welcome-h { font-size: 28px; }
+  .login-page .form-inner { max-width: 420px; }
 }

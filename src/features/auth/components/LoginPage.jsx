@@ -15,8 +15,8 @@ export default function LoginPage() {
   } = useLoginForm();
 
   return (
-    <>
-      <div className="left">
+    <main className="login-page">
+      <section className="left" aria-label="Orion CX overview">
         <div className="brand-content">
           <div className="brand-row">
             <div className="brand-icon"><i className="ti ti-stars"></i></div>
@@ -92,9 +92,9 @@ export default function LoginPage() {
           <span className="badge"><i className="ti ti-bolt"></i> AI-Powered</span>
           <span className="badge"><i className="ti ti-globe"></i> 360° View</span>
         </div>
-      </div>
+      </section>
 
-      <div className="right">
+      <section className="right" aria-label="Sign in">
         <form className="form-inner" onSubmit={handleSubmit}>
           <p className="welcome-h">Welcome Back</p>
           <p className="welcome-s">Sign in to your Orion CX account</p>
@@ -159,7 +159,7 @@ export default function LoginPage() {
           </div>
 
         </form>
-      </div>
-    </>
+      </section>
+    </main>
   );
 }

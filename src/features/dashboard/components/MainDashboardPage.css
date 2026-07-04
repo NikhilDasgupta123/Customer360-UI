@@ -250,3 +250,76 @@
   .dash-health-svg { height: 198px; }
   .dash-risk-row { grid-template-columns: minmax(0, 1fr) 28px 54px; font-size: 11px; }
 }
+
+
+/*
+  Desktop dashboard viewport fit.
+  The dashboard itself does not scroll at >=1101px. Its panels flex to the
+  remaining available height, while the Customer Directory and other pages
+  retain their normal scrolling behaviour.
+*/
+@media (min-width: 1101px) {
+  .cg-main-area.is-fixed .dash-page-head {
+    flex: 0 0 auto;
+    margin: 10px 0 14px;
+  }
+
+  .cg-main-area.is-fixed .dash-feedback {
+    flex: 0 0 auto;
+  }
+
+  .cg-main-area.is-fixed .dash-metrics {
+    flex: 0 0 auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cg-main-area.is-fixed .dash-metric-card.wide {
+    grid-column: span 2;
+  }
+
+  .cg-main-area.is-fixed .dash-bottom-grid {
+    display: grid;
+    flex: 1 1 0;
+    grid-template-columns: minmax(0, 1.08fr) minmax(300px, .92fr);
+    min-height: 0;
+    margin-top: 14px;
+  }
+
+  .cg-main-area.is-fixed .dash-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .cg-main-area.is-fixed .dash-panel header {
+    flex: 0 0 auto;
+  }
+
+  .cg-main-area.is-fixed .dash-health-svg,
+  .cg-main-area.is-fixed .dash-chart-empty {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+  }
+
+  .cg-main-area.is-fixed .dash-risk-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .cg-main-area.is-fixed .dash-view-all {
+    flex: 0 0 auto;
+  }
+}
+
+/* On compact laptops, tablets and phones, show the complete dashboard using
+   normal document scrolling instead of cropping any cards or charts. */
+@media (max-width: 1100px) {
+  .cg-main-area.is-fixed .dash-bottom-grid {
+    min-height: auto;
+  }
+}

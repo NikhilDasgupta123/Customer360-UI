@@ -69,7 +69,7 @@ export default function MainDashboardPage() {
   ];
 
   return (
-    <CustomerGraphAppShell activeNav="dashboard" screenCode="C-02" screenTitle="Main Dashboard">
+    <CustomerGraphAppShell activeNav="dashboard" screenCode="C-02" screenTitle="Main Dashboard" contentMode="fixed">
       <section className="dash-page-head">
         <div><p className="dash-eyebrow">PORTFOLIO OVERVIEW</p><h2>Customer health at a glance</h2><p>Live business intelligence from the connected customer graph.</p></div>
         <button className="dash-refresh-button" type="button" onClick={refresh} disabled={isLoading}>{isLoading ? 'Loading…' : '↻ Refresh'}</button>

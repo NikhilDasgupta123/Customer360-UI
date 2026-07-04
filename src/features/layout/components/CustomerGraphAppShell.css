@@ -384,3 +384,153 @@
   .cg-top-actions .cg-icon-button { display: none; }
   .cg-global-search input { font-size: 11px; }
 }
+
+/* Profile menu: clicking the avatar opens this menu; signing out is a separate action. */
+.cg-profile-menu-wrap {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.cg-profile-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cg-profile-button[aria-expanded="true"] {
+  outline: 3px solid rgba(37, 99, 235, .16);
+  outline-offset: 2px;
+}
+
+.cg-profile-menu {
+  position: absolute;
+  z-index: 70;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(276px, calc(100vw - 28px));
+  padding: 8px;
+  border: 1px solid #e2e8f2;
+  border-radius: 12px;
+  color: #263247;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, .16), 0 2px 6px rgba(15, 23, 42, .06);
+}
+
+.cg-profile-menu-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+}
+
+.cg-profile-menu-avatar {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  color: #fff;
+  background: #245fe8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cg-profile-menu-user div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.cg-profile-menu-user strong,
+.cg-profile-menu-user span,
+.cg-profile-menu-user small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cg-profile-menu-user strong {
+  color: #202938;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cg-profile-menu-user span {
+  color: #728096;
+  font-size: 11px;
+}
+
+.cg-profile-menu-user small {
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.cg-profile-menu-divider {
+  height: 1px;
+  margin: 5px 0;
+  background: #edf1f6;
+}
+
+.cg-profile-logout {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 37px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 8px;
+  color: #cf3445;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.cg-profile-logout:hover,
+.cg-profile-logout:focus-visible {
+  color: #b42336;
+  background: #fff1f3;
+  outline: 0;
+}
+
+@media (max-width: 420px) {
+  .cg-profile-menu { right: -2px; }
+}
+
+
+/*
+  Fixed dashboard mode:
+  - Used only by the dashboard on spacious desktop screens.
+  - Directory/Admin screens remain vertically scrollable.
+  - Tablet/mobile revert to normal page scrolling so no content is clipped.
+*/
+.cg-main-area.is-fixed {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cg-main-area.is-fixed .cg-topbar {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1100px) {
+  .cg-main-area.is-fixed {
+    display: block;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 680px) {
+  .cg-main-area.is-fixed {
+    overflow: visible;
+  }
+}
