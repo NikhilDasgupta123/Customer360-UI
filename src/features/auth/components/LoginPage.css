@@ -1,325 +1,511 @@
-/* Orion CX login — self-contained two-panel layout.
-   The wrapper prevents dashboard-level responsive styles from stacking these panels on desktop. */
-.login-page {
+/* Orion CX login replacement — this file is isolated to LoginPage and does not affect dashboard screens. */
+.orion-login-page {
   display: flex;
   width: 100%;
-  min-width: 0;
   min-height: 100dvh;
-  height: 100%;
   overflow: hidden;
   background: #fff;
 }
 
-/* ── LEFT PANEL – deep space ── */
-.login-page .left {
-  flex: 1 1 50%;
+.orion-login-visual,
+.orion-login-form-panel {
+  width: 50%;
   min-width: 0;
-  min-height: 0;
-  background: #050a1a;
+}
+
+/* ── Animated dark space panel ── */
+.orion-login-visual {
+  position: relative;
   display: flex;
-  flex-direction: column;
+  min-height: 100dvh;
   align-items: center;
   justify-content: center;
-  gap: 1.8rem;
-  padding: 3rem 2.5rem;
-  position: relative;
   overflow: hidden;
+  padding: 2.25rem 2.5rem;
+  color: #fff;
+  border-right: 1px solid rgba(255, 255, 255, 0.035);
+  background: radial-gradient(circle at center, #111725 0%, #0a0d14 74%);
 }
 
-/* star dots */
-.login-page .left::before {
-  content: '';
+.orion-stars {
   position: absolute;
+  z-index: 0;
   inset: 0;
+  pointer-events: none;
+}
+
+.orion-stars-one {
   background-image:
-    radial-gradient(1.5px 1.5px at 12% 18%, #fff 0%, transparent 100%),
-    radial-gradient(1px 1px at 28% 72%, rgba(255,255,255,0.7) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 44% 35%, rgba(255,255,255,0.9) 0%, transparent 100%),
-    radial-gradient(1px 1px at 58% 85%, rgba(255,255,255,0.6) 0%, transparent 100%),
-    radial-gradient(2px 2px at 70% 22%, rgba(255,255,255,0.8) 0%, transparent 100%),
-    radial-gradient(1px 1px at 82% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 92% 40%, rgba(255,255,255,0.7) 0%, transparent 100%),
-    radial-gradient(1px 1px at 18% 90%, rgba(255,255,255,0.6) 0%, transparent 100%),
-    radial-gradient(1px 1px at 36% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 64% 8%, rgba(255,255,255,0.8) 0%, transparent 100%),
-    radial-gradient(1px 1px at 76% 78%, rgba(255,255,255,0.4) 0%, transparent 100%),
-    radial-gradient(2px 2px at 8% 48%, rgba(255,255,255,0.6) 0%, transparent 100%),
-    radial-gradient(1px 1px at 88% 92%, rgba(255,255,255,0.5) 0%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 50% 65%, rgba(200,220,255,0.6) 0%, transparent 100%),
-    radial-gradient(1px 1px at 22% 30%, rgba(200,220,255,0.5) 0%, transparent 100%);
-  pointer-events: none;
+    radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 140px 70px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 250px 160px, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 80px 220px, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 300px 320px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 380px 110px, rgba(255, 255, 255, 0.5), transparent);
+  background-size: 400px 400px;
+  animation: orion-move-stars 60s linear infinite;
 }
 
-/* nebula glow behind graph */
-.login-page .left::after {
-  content: '';
+.orion-stars-two {
+  opacity: 0.8;
+  background-image:
+    radial-gradient(1.5px 1.5px at 50px 150px, rgba(164, 117, 255, 0.8), transparent),
+    radial-gradient(1.5px 1.5px at 220px 80px, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1.5px 1.5px at 350px 250px, rgba(123, 66, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 180px 330px, rgba(255, 255, 255, 0.6), transparent);
+  background-size: 300px 300px;
+  animation: orion-move-stars 40s linear infinite reverse;
+}
+
+.orion-stars-three {
+  opacity: 0.6;
+  background-image:
+    radial-gradient(2px 2px at 90px 40px, #fff, transparent),
+    radial-gradient(2px 2px at 280px 190px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 120px 380px, rgba(164, 117, 255, 0.9), transparent);
+  background-size: 450px 450px;
+  animation: orion-move-stars-down 30s linear infinite;
+}
+
+@keyframes orion-move-stars {
+  from { background-position: 0 0; }
+  to { background-position: 1000px 1000px; }
+}
+
+@keyframes orion-move-stars-down {
+  from { background-position: 0 0; }
+  to { background-position: -500px 1000px; }
+}
+
+.orion-ufo {
   position: absolute;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.10) 40%, transparent 70%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  z-index: 1;
+  top: 25%;
+  left: -100px;
+  color: rgba(164, 117, 255, 0.9);
+  animation: orion-fly-ufo 18s ease-in-out infinite;
   pointer-events: none;
 }
 
-.login-page .brand-content {
+@keyframes orion-fly-ufo {
+  0% { transform: translate(0, 0) scale(0.5) rotate(15deg); opacity: 0; }
+  10% { opacity: 0.8; }
+  40% { transform: translate(25vw, -30px) scale(0.9) rotate(-5deg); opacity: 1; }
+  60% { transform: translate(35vw, 20px) scale(1) rotate(-10deg); }
+  90% { opacity: 0.8; }
+  100% { transform: translate(60vw, -80px) scale(0.5) rotate(20deg); opacity: 0; }
+}
+
+.orion-visual-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  display: flex;
+  width: min(100%, 530px);
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
-.login-page .brand-row {
+.orion-brand-header {
   display: flex;
   align-items: center;
-  gap: 13px;
-  justify-content: center;
-  margin-bottom: 10px;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-.login-page .brand-icon {
-  width: 46px;
-  height: 46px;
+.orion-brand-mark {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
   border-radius: 12px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px rgba(139,92,246,0.5);
-}
-
-.login-page .brand-icon i { font-size: 24px; color: #fff; }
-
-.login-page .brand-name {
-  font-size: 22px;
-  font-weight: 700;
   color: #fff;
-  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #a475ff, #7b42ff);
+  box-shadow: 0 4px 20px rgba(123, 66, 255, 0.32);
 }
 
-.login-page .brand-name span { color: #a78bfa; }
+.orion-brand-header h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2px;
+}
 
-.login-page .brand-tagline {
-  font-size: 13px;
-  color: rgba(255,255,255,0.5);
-  letter-spacing: 0.3px;
+.orion-brand-header h1 span { color: #a475ff; }
+
+.orion-brand-subtitle {
+  margin: 0 0 38px;
+  color: #7a8498;
+  font-size: 14.5px;
+  font-weight: 500;
   line-height: 1.6;
 }
 
-.login-page .network-wrap { position: relative; z-index: 1; }
-
-.login-page .network-svg {
-  display: block;
-  width: min(300px, 36vw);
-  height: min(300px, 36vw);
-  filter: drop-shadow(0 0 18px rgba(139,92,246,0.35));
+/* ── Customer relationship network ── */
+.orion-network {
+  position: relative;
+  display: flex;
+  width: min(360px, 32vw);
+  height: min(360px, 32vw);
+  min-width: 270px;
+  min-height: 270px;
+  align-items: center;
+  justify-content: center;
+  animation: orion-network-float 7s ease-in-out infinite;
 }
 
-.login-page .badge-row {
+@keyframes orion-network-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.orion-network-glow {
+  position: absolute;
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(91, 85, 249, 0.14) 0%, rgba(10, 13, 20, 0) 68%);
+}
+
+.orion-orbit-system {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  animation: orion-spin-orbit 40s linear infinite;
+}
+
+@keyframes orion-spin-orbit { to { transform: rotate(360deg); } }
+
+.orion-network-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.orion-network-lines line,
+.orion-network-lines polygon {
+  fill: none;
+  stroke: rgba(123, 97, 255, 0.26);
+  stroke-width: 1.2;
+}
+
+.orion-network-lines .orion-dashed-orbit {
+  fill: none;
+  stroke: rgba(123, 97, 255, 0.22);
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+}
+
+.orion-point.point-one { fill: #5c62f9; }
+.orion-point.point-two { fill: #854bff; }
+.orion-point.point-three { fill: #7542ff; }
+.orion-point.point-four { fill: #8149ff; }
+.orion-point.point-five { fill: #6a64ff; }
+
+.orion-ring {
+  position: absolute;
+  z-index: 1;
+  border: 1px solid rgba(123, 97, 255, 0.3);
+  border-radius: 50%;
+}
+
+.orion-ring-one { width: 36.1%; height: 36.1%; }
+.orion-ring-two { width: 48.6%; height: 48.6%; border-color: rgba(123, 97, 255, 0.15); }
+
+.orion-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #0a0d14;
+  border-radius: 50%;
+  color: #f1f0ff;
+}
+
+.orion-node-outer {
+  position: absolute;
+  z-index: 2;
+  width: 14.45%;
+  height: 14.45%;
+}
+
+.orion-node-outer svg { animation: orion-counter-spin 40s linear infinite; }
+@keyframes orion-counter-spin { to { transform: rotate(-360deg); } }
+
+.orion-node-one { top: 11.1%; left: 16.7%; background: #5c62f9; }
+.orion-node-two { top: 11.1%; right: 16.7%; background: #854bff; }
+.orion-node-three { top: 42.8%; left: 3.9%; background: #965cff; }
+.orion-node-four { top: 42.8%; right: 3.9%; background: #6a64ff; }
+.orion-node-five { bottom: 11.1%; left: 23.6%; background: #7542ff; }
+.orion-node-six { right: 23.6%; bottom: 11.1%; background: #8149ff; }
+
+.orion-node-centre {
+  position: relative;
+  z-index: 3;
+  width: 23.35%;
+  height: 23.35%;
+  border: 4px solid #0a0d14;
+  background: #5b55f9;
+  box-shadow: 0 0 35px rgba(91, 85, 249, 0.5);
+  animation: orion-pulse-node 3s infinite;
+}
+
+@keyframes orion-pulse-node {
+  0% { box-shadow: 0 0 0 0 rgba(91, 85, 249, 0.45); }
+  70% { box-shadow: 0 0 0 20px rgba(91, 85, 249, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(91, 85, 249, 0); }
+}
+
+.orion-feature-pills {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  position: relative;
-  z-index: 1;
+  gap: 14px;
+  margin-top: 36px;
 }
 
-.login-page .badge {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-size: 11.5px;
-  color: rgba(255,255,255,0.55);
-  display: flex;
+.orion-feature-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  white-space: nowrap;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 20px;
+  color: #7a8498;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 180ms ease;
 }
 
-.login-page .badge i { font-size: 13px; color: #a78bfa; }
+.orion-feature-pill:hover { background: rgba(255, 255, 255, 0.055); }
+.orion-feature-pill svg { width: 14px; height: 14px; opacity: 0.84; }
 
-/* ── RIGHT PANEL ── */
-.login-page .right {
-  flex: 1 1 50%;
-  min-width: 0;
-  min-height: 0;
-  background: #fff;
+/* ── White authentication panel ── */
+.orion-login-form-panel {
   display: flex;
-  flex-direction: column;
+  min-height: 100dvh;
   align-items: center;
   justify-content: center;
-  padding: 3rem 2.5rem;
-  overflow-y: auto;
-}
-
-.login-page .form-inner { width: 100%; max-width: 390px; }
-
-.login-page .welcome-h {
-  font-size: 25px;
-  font-weight: 700;
-  color: #0f172a;
-  text-align: center;
-  margin-bottom: 4px;
-}
-
-.login-page .welcome-s {
-  font-size: 13px;
-  color: #94a3b8;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.login-page .field-lbl {
-  font-size: 12.5px;
-  color: #475569;
-  margin-bottom: 6px;
-  display: block;
-  font-weight: 500;
-}
-
-.login-page .field-grp { position: relative; margin-bottom: 16px; }
-
-.login-page .field-grp input {
-  width: 100%;
-  padding: 11px 38px 11px 14px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 14px;
-  color: #334155;
-  background: #f8fafc;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.login-page .field-grp input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  padding: 40px;
   background: #fff;
 }
 
-.login-page .eye-icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 17px;
-  color: #94a3b8;
-  cursor: pointer;
+.orion-login-form {
+  width: 100%;
+  max-width: 380px;
 }
 
-.login-page .forgot-row { text-align: right; margin: -10px 0 16px; }
-.login-page .forgot-row a { font-size: 12.5px; color: #6366f1; text-decoration: none; }
-.login-page .forgot-row a:hover { text-decoration: underline; }
+.orion-login-form h2 {
+  margin: 0 0 8px;
+  color: #0f172a;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.18;
+  text-align: center;
+}
 
-.login-page .signin-btn {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
+.orion-login-description {
+  margin: 0 0 35px;
+  color: #64748b;
   font-size: 15px;
+  text-align: center;
+}
+
+.orion-form-group { position: relative; margin-bottom: 22px; }
+
+.orion-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.orion-form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  color: #334155;
+  background: #fff;
+  font-size: 15px;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.orion-form-group input::placeholder { color: #94a3b8; }
+
+.orion-form-group input:focus {
+  border-color: #7b61ff;
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.11);
+}
+
+.orion-form-group input:disabled,
+.orion-password-toggle:disabled { cursor: not-allowed; opacity: 0.72; }
+
+.orion-password-field { position: relative; }
+.orion-password-field input { padding-right: 48px; }
+
+.orion-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  color: #94a3b8;
+  background: transparent;
+  cursor: pointer;
+  transition: color 180ms ease;
+}
+
+.orion-password-toggle:hover { color: #64748b; }
+.orion-password-toggle svg { width: 20px; height: 20px; }
+
+.orion-forgot-row { margin-top: 10px; text-align: right; }
+.orion-forgot-row a {
+  color: #7b61ff;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.orion-forgot-row a:hover { text-decoration: underline; }
+
+.orion-signin-button {
+  width: 100%;
+  margin-top: -2px;
+  padding: 14px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: #7b61ff;
+  box-shadow: 0 4px 14px rgba(123, 97, 255, 0.3);
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  margin-bottom: 1.2rem;
-  box-shadow: 0 4px 15px rgba(99,102,241,0.35);
-  transition: opacity 0.15s, transform 0.1s;
+  transition: background 180ms ease, box-shadow 180ms ease, transform 100ms ease;
 }
 
-.login-page .signin-btn:hover { opacity: 0.92; }
-.login-page .signin-btn:active { transform: scale(0.99); }
-.login-page .signin-btn:disabled { opacity: 0.65; cursor: not-allowed; }
-
-.login-page .divider {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+.orion-signin-button:hover:not(:disabled) {
+  background: #6a4dff;
+  box-shadow: 0 6px 20px rgba(123, 97, 255, 0.4);
 }
+.orion-signin-button:active:not(:disabled) { transform: scale(0.99); }
+.orion-signin-button:disabled { cursor: not-allowed; opacity: 0.68; }
 
-.login-page .divider hr { flex: 1; border: none; border-top: 1px solid #e2e8f0; }
-.login-page .divider span { font-size: 12px; color: #94a3b8; white-space: nowrap; }
-
-.login-page .social-row {
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  margin-bottom: 1.6rem;
-}
-
-.login-page .social-btn {
-  width: 48px;
-  height: 48px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  background: #fff;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.login-page .social-btn:hover {
-  border-color: #a5b4fc;
-  box-shadow: 0 2px 10px rgba(99,102,241,0.12);
-}
-
-.login-page .login-message {
-  margin: -6px 0 14px;
+.orion-login-message {
+  margin: 14px 0 0;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
   text-align: center;
-  font-size: 12.5px;
-  color: #4f46e5;
 }
 
-/* Tablet: preserve the original two-panel sign-in layout, but give each panel enough room. */
-@media (max-width: 980px) and (min-width: 681px) {
-  .login-page .left,
-  .login-page .right { padding: 2.25rem 1.75rem; }
-
-  .login-page .network-svg {
-    width: min(245px, 38vw);
-    height: min(245px, 38vw);
-  }
-
-  .login-page .badge { padding-inline: 10px; }
+.orion-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 30px 0 25px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
 }
 
-/* Mobile: stack deliberately and allow the browser page to scroll. */
-@media (max-width: 680px) {
-  .login-page {
-    flex-direction: column;
+.orion-divider::before,
+.orion-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.orion-divider span { white-space: nowrap; }
+
+.orion-social-row {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.orion-social-button {
+  display: grid;
+  width: 64px;
+  height: 50px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.orion-social-button:hover { border-color: #94a3b8; background: #f8fafc; }
+.orion-social-button svg { width: 22px; height: 22px; }
+
+.orion-login-form button:focus-visible,
+.orion-login-form a:focus-visible {
+  outline: 2px solid #7b61ff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 1080px) and (min-width: 721px) {
+  .orion-login-visual { padding-inline: 1.5rem; }
+  .orion-login-form-panel { padding-inline: 2rem; }
+  .orion-network { width: min(330px, 38vw); height: min(330px, 38vw); }
+  .orion-feature-pill { padding-inline: 12px; }
+}
+
+@media (max-width: 720px) {
+  .orion-login-page {
     min-height: 100dvh;
-    height: auto;
+    flex-direction: column;
     overflow: visible;
   }
 
-  .login-page .left {
-    flex: 0 0 auto;
-    min-height: 430px;
-    padding: 2.5rem 1.5rem 2rem;
+  .orion-login-visual,
+  .orion-login-form-panel {
+    width: 100%;
   }
 
-  .login-page .network-svg {
-    width: min(230px, 68vw);
-    height: min(230px, 68vw);
+  .orion-login-visual {
+    min-height: 510px;
+    padding: 2.5rem 1.5rem 2.25rem;
   }
 
-  .login-page .right {
-    flex: 0 0 auto;
+  .orion-brand-subtitle { margin-bottom: 28px; }
+  .orion-network { width: min(300px, 76vw); height: min(300px, 76vw); min-width: 0; min-height: 0; }
+  .orion-feature-pills { margin-top: 28px; gap: 9px; }
+  .orion-feature-pill { padding: 7px 12px; font-size: 12px; }
+
+  .orion-login-form-panel {
     min-height: auto;
-    padding: 2.5rem 1.5rem 3rem;
-    overflow: visible;
+    padding: 2.75rem 1.5rem 3rem;
   }
-
-  .login-page .form-inner { max-width: 100%; }
 }
 
-@media (min-width: 1400px) {
-  .login-page .brand-name { font-size: 26px; }
-  .login-page .network-svg { width: 340px; height: 340px; }
-  .login-page .welcome-h { font-size: 28px; }
-  .login-page .form-inner { max-width: 420px; }
+@media (max-width: 380px) {
+  .orion-brand-header h1 { font-size: 29px; }
+  .orion-brand-mark { width: 44px; height: 44px; }
+  .orion-network { width: min(270px, 82vw); height: min(270px, 82vw); }
+  .orion-feature-pill { padding-inline: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orion-stars,
+  .orion-ufo,
+  .orion-network,
+  .orion-orbit-system,
+  .orion-node-outer svg,
+  .orion-node-centre { animation: none; }
 }

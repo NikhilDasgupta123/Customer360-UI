@@ -1,6 +1,52 @@
 import './LoginPage.css';
 import { useLoginForm } from '../logic/useLoginForm.js';
 
+function RocketLogo() {
+  return (
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M21.2 2.8c-.8-.8-2.1-1.1-3.6-.5-2.2 1-5.7 3.5-7.7 5.5l-4.5-1.1a1 1 0 0 0-1 .3l-2.2 2.2a1 1 0 0 0 .2 1.6l4 2-2.7 3.6a1 1 0 0 0 .2 1.4l2.5 2.5a1 1 0 0 0 1.4.2l3.6-2.7 2 4a1 1 0 0 0 1.6.2l2.2-2.2a1 1 0 0 0 .3-1l-1.1-4.5c2-2 4.5-5.5 5.5-7.7.6-1.5.3-2.8-.5-3.6zM14 12a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
+    </svg>
+  );
+}
+
+function PersonNodeIcon({ centre = false }) {
+  return (
+    <svg width={centre ? 48 : 28} height={centre ? 48 : 28} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M12 14c-4.4 0-8 3.1-8 7h16c0-3.9-3.6-7-8-7z" />
+      {centre ? (
+        <>
+          <circle cx="5" cy="11" r="1.2" />
+          <circle cx="19" cy="11" r="1.2" />
+          <circle cx="12" cy="2" r="1.2" />
+        </>
+      ) : null}
+    </svg>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    </svg>
+  );
+}
+
+function MicrosoftIcon() {
+  return (
+    <svg viewBox="0 0 21 21" aria-hidden="true">
+      <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+      <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+      <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+      <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
   const {
     email,
@@ -15,149 +61,150 @@ export default function LoginPage() {
   } = useLoginForm();
 
   return (
-    <main className="login-page">
-      <section className="left" aria-label="Orion CX overview">
-        <div className="brand-content">
-          <div className="brand-row">
-            <div className="brand-icon"><i className="ti ti-stars"></i></div>
-            <span className="brand-name">Orion <span>CX</span></span>
-          </div>
-          <p className="brand-tagline">AI-Powered Customer Intelligence<br />Navigating Relationships Beyond Horizons</p>
-        </div>
+    <main className="orion-login-page">
+      <section className="orion-login-visual" aria-label="Orion CX platform overview">
+        <div className="orion-stars orion-stars-one" aria-hidden="true" />
+        <div className="orion-stars orion-stars-two" aria-hidden="true" />
+        <div className="orion-stars orion-stars-three" aria-hidden="true" />
 
-        <div className="network-wrap">
-          <svg className="network-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="110" cy="110" r="95" fill="none" stroke="rgba(139,92,246,0.15)" strokeWidth="1" strokeDasharray="4 6" />
-            <circle cx="110" cy="110" r="68" fill="none" stroke="rgba(99,102,241,0.2)" strokeWidth="1" strokeDasharray="3 5" />
-
-            <line x1="110" y1="110" x2="52" y2="58" stroke="#6366f1" strokeWidth="1.5" opacity="0.6" />
-            <line x1="110" y1="110" x2="168" y2="58" stroke="#6366f1" strokeWidth="1.5" opacity="0.6" />
-            <line x1="110" y1="110" x2="36" y2="120" stroke="#8b5cf6" strokeWidth="1.5" opacity="0.6" />
-            <line x1="110" y1="110" x2="184" y2="120" stroke="#8b5cf6" strokeWidth="1.5" opacity="0.6" />
-            <line x1="110" y1="110" x2="80" y2="172" stroke="#a78bfa" strokeWidth="1.5" opacity="0.55" />
-            <line x1="110" y1="110" x2="146" y2="170" stroke="#a78bfa" strokeWidth="1.5" opacity="0.55" />
-            <line x1="52" y1="58" x2="168" y2="58" stroke="#6366f1" strokeWidth="1" opacity="0.3" />
-            <line x1="36" y1="120" x2="80" y2="172" stroke="#8b5cf6" strokeWidth="1" opacity="0.3" />
-            <line x1="184" y1="120" x2="146" y2="170" stroke="#8b5cf6" strokeWidth="1" opacity="0.3" />
-
-            <circle cx="18" cy="85" r="3" fill="#a78bfa" opacity="0.6" />
-            <circle cx="200" cy="85" r="3" fill="#818cf8" opacity="0.6" />
-            <circle cx="62" cy="194" r="3" fill="#a78bfa" opacity="0.5" />
-            <circle cx="158" cy="193" r="3" fill="#a78bfa" opacity="0.5" />
-            <line x1="36" y1="120" x2="18" y2="85" stroke="#6366f1" strokeWidth="0.8" opacity="0.35" />
-            <line x1="184" y1="120" x2="200" y2="85" stroke="#8b5cf6" strokeWidth="0.8" opacity="0.35" />
-            <line x1="80" y1="172" x2="62" y2="194" stroke="#6366f1" strokeWidth="0.8" opacity="0.35" />
-            <line x1="146" y1="170" x2="158" y2="193" stroke="#6366f1" strokeWidth="0.8" opacity="0.35" />
-
-            <circle cx="110" cy="110" r="36" fill="rgba(99,102,241,0.15)" />
-            <circle cx="110" cy="110" r="28" fill="#4f46e5" opacity="0.95" />
-            <circle cx="110" cy="110" r="36" fill="none" stroke="#818cf8" strokeWidth="1.2" opacity="0.6" />
-            <circle cx="110" cy="103" r="8" fill="#fff" opacity="0.95" />
-            <ellipse cx="110" cy="124" rx="11.5" ry="7" fill="#fff" opacity="0.85" />
-
-            <circle cx="52" cy="58" r="20" fill="#6366f1" opacity="0.9" />
-            <circle cx="52" cy="58" r="25" fill="none" stroke="#818cf8" strokeWidth="0.8" opacity="0.4" />
-            <circle cx="52" cy="52" r="6" fill="#fff" opacity="0.9" />
-            <ellipse cx="52" cy="67" rx="8.5" ry="5" fill="#fff" opacity="0.8" />
-
-            <circle cx="168" cy="58" r="20" fill="#7c3aed" opacity="0.9" />
-            <circle cx="168" cy="58" r="25" fill="none" stroke="#a78bfa" strokeWidth="0.8" opacity="0.4" />
-            <circle cx="168" cy="52" r="6" fill="#fff" opacity="0.9" />
-            <ellipse cx="168" cy="67" rx="8.5" ry="5" fill="#fff" opacity="0.8" />
-
-            <circle cx="36" cy="120" r="14" fill="#8b5cf6" opacity="0.85" />
-            <circle cx="36" cy="115" r="4.2" fill="#fff" opacity="0.9" />
-            <ellipse cx="36" cy="126" rx="6" ry="3.6" fill="#fff" opacity="0.8" />
-
-            <circle cx="184" cy="120" r="14" fill="#6366f1" opacity="0.85" />
-            <circle cx="184" cy="115" r="4.2" fill="#fff" opacity="0.9" />
-            <ellipse cx="184" cy="126" rx="6" ry="3.6" fill="#fff" opacity="0.8" />
-
-            <circle cx="80" cy="172" r="14" fill="#7c3aed" opacity="0.8" />
-            <circle cx="80" cy="167" r="4.2" fill="#fff" opacity="0.9" />
-            <ellipse cx="80" cy="178" rx="6" ry="3.6" fill="#fff" opacity="0.8" />
-
-            <circle cx="146" cy="170" r="12" fill="#8b5cf6" opacity="0.75" />
-            <circle cx="146" cy="165" r="3.6" fill="#fff" opacity="0.9" />
-            <ellipse cx="146" cy="176" rx="5.2" ry="3" fill="#fff" opacity="0.8" />
-
-            <circle cx="98" cy="110" r="2" fill="#e0e7ff" opacity="0.9" />
-            <circle cx="110" cy="110" r="2" fill="#e0e7ff" opacity="0.9" />
-            <circle cx="122" cy="110" r="2" fill="#e0e7ff" opacity="0.9" />
+        <div className="orion-ufo" aria-hidden="true">
+          <svg width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <ellipse cx="12" cy="14" rx="10" ry="3" fill="rgba(123,66,255,0.4)" />
+            <path d="M6 13c0-3.5 2.5-6 6-6s6 2.5 6 6" fill="rgba(164,117,255,0.2)" />
+            <circle cx="12" cy="14" r="1" fill="#fff" stroke="none" />
+            <circle cx="7" cy="14" r="1" fill="#fff" stroke="none" />
+            <circle cx="17" cy="14" r="1" fill="#fff" stroke="none" />
           </svg>
         </div>
 
-        <div className="badge-row">
-          <span className="badge"><i className="ti ti-shield-check"></i> Secure</span>
-          <span className="badge"><i className="ti ti-bolt"></i> AI-Powered</span>
-          <span className="badge"><i className="ti ti-globe"></i> 360° View</span>
+        <div className="orion-visual-content">
+          <header className="orion-brand-header">
+            <div className="orion-brand-mark"><RocketLogo /></div>
+            <h1>Orion <span>CX</span></h1>
+          </header>
+
+          <p className="orion-brand-subtitle">
+            AI-Powered Customer Intelligence
+            <br />
+            Navigating Relationships Beyond Horizons
+          </p>
+
+          <div className="orion-network" aria-hidden="true">
+            <div className="orion-network-glow" />
+            <div className="orion-orbit-system">
+              <svg className="orion-network-lines" viewBox="0 0 360 360">
+                <circle cx="180" cy="180" r="140" className="orion-dashed-orbit" />
+                <circle cx="40" cy="180" r="2.5" className="orion-point point-one" />
+                <circle cx="320" cy="180" r="2.5" className="orion-point point-two" />
+                <circle cx="110" cy="240" r="2.5" className="orion-point point-three" />
+                <circle cx="250" cy="240" r="2.5" className="orion-point point-four" />
+                <circle cx="110" cy="58" r="2.5" className="orion-point point-one" />
+                <circle cx="250" cy="58" r="2.5" className="orion-point point-two" />
+                <circle cx="180" cy="320" r="2.5" className="orion-point point-five" />
+                <line x1="180" y1="180" x2="86" y2="66" />
+                <line x1="180" y1="180" x2="274" y2="66" />
+                <line x1="180" y1="180" x2="40" y2="180" />
+                <line x1="180" y1="180" x2="320" y2="180" />
+                <line x1="180" y1="180" x2="111" y2="286" />
+                <line x1="180" y1="180" x2="249" y2="286" />
+                <polygon points="86,66 274,66 320,180 249,286 111,286 40,180" />
+              </svg>
+              <div className="orion-node orion-node-outer orion-node-one"><PersonNodeIcon /></div>
+              <div className="orion-node orion-node-outer orion-node-two"><PersonNodeIcon /></div>
+              <div className="orion-node orion-node-outer orion-node-three"><PersonNodeIcon /></div>
+              <div className="orion-node orion-node-outer orion-node-four"><PersonNodeIcon /></div>
+              <div className="orion-node orion-node-outer orion-node-five"><PersonNodeIcon /></div>
+              <div className="orion-node orion-node-outer orion-node-six"><PersonNodeIcon /></div>
+            </div>
+            <div className="orion-ring orion-ring-one" />
+            <div className="orion-ring orion-ring-two" />
+            <div className="orion-node orion-node-centre"><PersonNodeIcon centre /></div>
+          </div>
+
+          <div className="orion-feature-pills" aria-label="Platform benefits">
+            <span className="orion-feature-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>
+              Secure
+            </span>
+            <span className="orion-feature-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+              AI-Powered
+            </span>
+            <span className="orion-feature-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+              360° View
+            </span>
+          </div>
         </div>
       </section>
 
-      <section className="right" aria-label="Sign in">
-        <form className="form-inner" onSubmit={handleSubmit}>
-          <p className="welcome-h">Welcome Back</p>
-          <p className="welcome-s">Sign in to your Orion CX account</p>
+      <section className="orion-login-form-panel" aria-label="Sign in">
+        <form className="orion-login-form" onSubmit={handleSubmit} noValidate>
+          <h2>Welcome Back</h2>
+          <p className="orion-login-description">Sign in to your Orion CX account</p>
 
-          <label className="field-lbl">Email</label>
-          <div className="field-grp">
+          <div className="orion-form-group">
+            <label htmlFor="orion-login-email">Email</label>
             <input
+              id="orion-login-email"
               type="email"
+              inputMode="email"
+              autoComplete="email"
               placeholder="you@company.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              disabled={isSubmitting}
+              required
             />
           </div>
 
-          <label className="field-lbl">Password</label>
-          <div className="field-grp">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="pwd"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-            <i
-              className={`ti ${showPassword ? 'ti-eye-off' : 'ti-eye'} eye-icon`}
-              id="eyeBtn"
-              onClick={togglePassword}
-              role="button"
-              tabIndex="0"
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') togglePassword();
-              }}
-            ></i>
+          <div className="orion-form-group">
+            <label htmlFor="orion-login-password">Password</label>
+            <div className="orion-password-field">
+              <input
+                id="orion-login-password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                disabled={isSubmitting}
+                required
+              />
+              <button
+                className="orion-password-toggle"
+                type="button"
+                onClick={togglePassword}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                disabled={isSubmitting}
+              >
+                {showPassword ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.91 10.91 0 0 1 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.17 3.19M14.12 14.12A3 3 0 1 1 9.88 9.88M1 1l22 22" /></svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                )}
+              </button>
+            </div>
+            <div className="orion-forgot-row"><a href="#forgot-password" onClick={(event) => event.preventDefault()}>Forgot password?</a></div>
           </div>
 
-          <div className="forgot-row"><a href="#">Forgot password?</a></div>
-
-          <button className="signin-btn" type="submit" disabled={isSubmitting}>
+          <button className="orion-signin-button" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Signing In...' : 'Sign In'}
           </button>
 
-          {loginMessage ? <p className="login-message">{loginMessage}</p> : null}
+          {loginMessage ? <p className="orion-login-message" role="alert">{loginMessage}</p> : null}
 
-          <div className="divider"><hr /><span>or sign in with</span><hr /></div>
+          <div className="orion-divider" aria-hidden="true"><span>or sign in with</span></div>
 
-          <div className="social-row">
-            <div className="social-btn" title="Google">
-              <svg width="22" height="22" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.3 0 5.9 1.1 7.9 2.9l5.9-5.9C34.1 3.4 29.4 1.5 24 1.5 14.9 1.5 7.2 7 3.7 14.8l6.9 5.4C12.2 14 17.6 9.5 24 9.5z" />
-                <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4.1 7.1-10.1 7.1-17.1z" />
-                <path fill="#FBBC05" d="M10.6 28.8A14.5 14.5 0 0 1 9.5 24c0-1.7.3-3.3.9-4.8l-6.9-5.4A22.5 22.5 0 0 0 1.5 24c0 3.6.8 7 2.3 10.1l6.8-5.3z" />
-                <path fill="#34A853" d="M24 46.5c5.4 0 10-1.8 13.3-4.9l-7.6-5.9c-1.8 1.2-4.1 1.9-5.7 1.9-6.4 0-11.8-4.3-13.5-10.1l-6.8 5.3C7.1 40.9 14.9 46.5 24 46.5z" />
-              </svg>
-            </div>
-            <div className="social-btn" title="Microsoft">
-              <svg width="22" height="22" viewBox="0 0 21 21">
-                <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-                <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-                <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
-                <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
-              </svg>
-            </div>
+          <div className="orion-social-row" aria-label="Single sign-on options">
+            <button className="orion-social-button" type="button" aria-label="Google sign in is not configured" title="Google sign-in is not configured">
+              <GoogleIcon />
+            </button>
+            <button className="orion-social-button" type="button" aria-label="Microsoft sign in is not configured" title="Microsoft sign-in is not configured">
+              <MicrosoftIcon />
+            </button>
           </div>
-
         </form>
       </section>
     </main>
