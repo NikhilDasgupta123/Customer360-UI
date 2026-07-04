@@ -54,6 +54,20 @@ function initials(value) {
   return tokens.slice(0, 2).map((token) => token[0]).join('').toUpperCase() || '?';
 }
 
+function RocketLogo({ size = 16 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M21.2 2.8c-.8-.8-2.1-1.1-3.6-.5-2.2 1-5.7 3.5-7.7 5.5l-4.5-1.1a1 1 0 0 0-1 .3l-2.2 2.2a1 1 0 0 0 .2 1.6l4 2-2.7 3.6a1 1 0 0 0 .2 1.4l2.5 2.5a1 1 0 0 0 1.4.2l3.6-2.7 2 4a1 1 0 0 0 1.6.2l2.2-2.2a1 1 0 0 0 .3-1l-1.1-4.5c2-2 4.5-5.5 5.5-7.7.6-1.5.3-2.8-.5-3.6zM14 12a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
+    </svg>
+  );
+}
+
 function Icon({ name, size = 17 }) {
   const common = {
     width: size,
@@ -177,9 +191,13 @@ export default function CustomerGraphAppShell({
         <aside id="customergraph-navigation" className={`cg-sidebar ${isMobileNavOpen ? 'is-open' : ''}`}>
           <div>
             <div className="cg-brand">
-              <span className="cg-brand-mark">✦</span>
-              <span>CustomerGraph AI</span>
-              <small>Executive</small>
+              <span className="cg-brand-mark" aria-hidden="true">
+                <RocketLogo />
+              </span>
+              <span className="cg-brand-copy">
+                <strong>CustomerGraph</strong>
+                <span>AI Executive</span>
+              </span>
               <button type="button" className="cg-mobile-nav-close" onClick={() => setIsMobileNavOpen(false)} aria-label="Close navigation menu">
                 <Icon name="close" size={18} />
               </button>
