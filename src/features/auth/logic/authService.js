@@ -1,96 +1,74 @@
-const DEFAULT_API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
-function getApiBaseUrl() {
-  const configuredUrl = import.meta.env.VITE_API_BASE_URL;
-  return (configuredUrl || DEFAULT_API_BASE_URL).replace(/\/$/, '');
+function roleLabel(role) {
+  return String(role || '')
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-async function readApiResponse(response) {
-  const contentType = response.headers.get('content-type') || '';
-
-  if (contentType.includes('application/json')) {
-    return response.json();
-  }
-
-  const text = await response.text();
-  return { detail: text || response.statusText };
-}
-
-async function postJson(path, body) {
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await readApiResponse(response);
-
-  if (!response.ok) {
-    const message =
-      typeof data?.detail === 'string'
-        ? data.detail
-        : Array.isArray(data?.detail)
-          ? data.detail.map((item) => item.msg || item.message || JSON.stringify(item)).join(', ')
-          : data?.message || 'Request failed. Please try again.';
-
-    throw new Error(message);
-  }
-
-  return data;
-}
-
-export function saveAuthSession(authResponse) {
-  if (!authResponse?.tokens?.access_token) return;
-
-  localStorage.setItem('cg_access_token', authResponse.tokens.access_token);
-  localStorage.setItem('cg_refresh_token', authResponse.tokens.refresh_token);
-  localStorage.setItem('cg_user', JSON.stringify(authResponse.user));
-}
-
-export function clearAuthSession() {
-  localStorage.removeItem('cg_access_token');
-  localStorage.removeItem('cg_refresh_token');
-  localStorage.removeItem('cg_user');
+export function navigateTo(path) {
+  window.history.pushState({}, '', path);
+  window.dispatchEvent(new Event('customergraph:navigate'));
 }
 
 export async function loginCustomerGraph({ email, password }) {
-  const result = await postJson('/auth/login', {
-    email: email.trim(),
-    password,
+  const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
   });
 
-  saveAuthSession(result);
-  return result;
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data?.detail || data?.message || 'Login failed');
+  }
+
+  const accessToken = data?.tokens?.access_token || data?.access_token || data?.token || '';
+  const role = data?.user?.role || data?.role || '';
+
+  if (!accessToken || !role) {
+    throw new Error('Login response is incomplete. Please contact an administrator.');
+  }
+
+  const session = {
+    accessToken,
+    refreshToken: data?.tokens?.refresh_token || '',
+    role,
+    roleLabel: roleLabel(role),
+    email: data?.user?.email || email,
+    fullName: data?.user?.full_name || '',
+    userId: data?.user?.id || '',
+  };
+
+  localStorage.setItem('customergraph_session', JSON.stringify(session));
+  return session;
 }
 
-const UI_ROLE_TO_API_ROLE = {
-  'sales-executive': 'sales_executive',
-  'account-manager': 'account_manager',
-  'support-agent': 'support_agent',
-  'customer-success-manager': 'customer_success_manager',
-};
-
-function normalizeRoleForApi(roleId) {
-  return UI_ROLE_TO_API_ROLE[roleId] || String(roleId || '').replaceAll('-', '_');
+export function getCustomerGraphSession() {
+  try {
+    return JSON.parse(localStorage.getItem('customergraph_session')) || null;
+  } catch {
+    return null;
+  }
 }
 
-export async function requestCustomerGraphAccess({
-  fullName,
-  email,
-  password,
-  confirmPassword,
-  roleId,
-  team,
-}) {
-  return postJson('/auth/request-access', {
-    full_name: fullName.trim(),
-    email: email.trim(),
-    password,
-    confirm_password: confirmPassword,
-    company_team: team.trim() || null,
-    role: normalizeRoleForApi(roleId),
-  });
+export function logoutCustomerGraph() {
+  const session = getCustomerGraphSession();
+  const token = session?.accessToken;
+
+  // Clear the local browser session immediately, then ask the backend to
+  // revoke the JWT session in the background.
+  localStorage.removeItem('customergraph_session');
+  navigateTo('/');
+
+  if (token) {
+    void fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => {
+      // Local logout has already completed. A network failure here does not
+      // keep the user on the protected screen.
+    });
+  }
 }
