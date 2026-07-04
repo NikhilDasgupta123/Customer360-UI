@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CustomerGraph AI — API Docs</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+    <style>
+      body { margin: 0; background: #fafafa; }
+      .customergraph-docs-banner {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 10px 16px;
+        font: 600 13px/1.4 Arial, sans-serif;
+        color: #1e3a8a;
+        background: #eff6ff;
+        border-bottom: 1px solid #bfdbfe;
+      }
+      .customergraph-docs-banner[data-state="missing"] { color: #92400e; background: #fffbeb; border-color: #fde68a; }
+      .customergraph-docs-banner[data-state="error"] { color: #991b1b; background: #fef2f2; border-color: #fecaca; }
+    </style>
+  </head>
+  <body>
+    <div id="customergraph-docs-banner" class="customergraph-docs-banner" data-state="loading">
+      Loading CustomerGraph session…
+    </div>
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+    <script>
+      (() => {
+        'use strict';
+
+        const SESSION_STORAGE_KEY = 'customergraph_session';
+        const OPENAPI_URL = '/openapi.json';
+        const banner = document.getElementById('customergraph-docs-banner');
+        let bearerSchemeName = 'HTTPBearer';
+
+        function getSession() {
+          try {
+            return JSON.parse(window.localStorage.getItem(SESSION_STORAGE_KEY) || 'null');
+          } catch {
+            return null;
+          }
+        }
+
+        function getAccessToken() {
+          const token = getSession()?.accessToken;
+          return typeof token === 'string' && token.trim() ? token.trim() : '';
+        }
+
+        function setBanner(state, text) {
+          banner.dataset.state = state;
+          banner.textContent = text;
+        }
+
+        async function resolveBearerSchemeName() {
+          try {
+            const response = await window.fetch(OPENAPI_URL, { credentials: 'same-origin' });
+            if (!response.ok) return;
+
+            const schema = await response.json();
+            const schemes = schema?.components?.securitySchemes || {};
+            const bearerEntry = Object.entries(schemes).find(([, scheme]) =>
+              String(scheme?.type || '').toLowerCase() === 'http' &&
+              String(scheme?.scheme || '').toLowerCase() === 'bearer'
+            );
+            if (bearerEntry) bearerSchemeName = bearerEntry[0];
+          } catch {
+            // Swagger will still work because requestInterceptor adds the token.
+          }
+        }
+
+        function authorizeSwaggerUi(token) {
+          if (!token || !window.ui || typeof window.ui.preauthorizeApiKey !== 'function') return false;
+          window.ui.preauthorizeApiKey(bearerSchemeName, token);
+          return true;
+        }
+
+        async function initialise() {
+          const initialToken = getAccessToken();
+          await resolveBearerSchemeName();
+
+          window.ui = window.SwaggerUIBundle({
+            url: OPENAPI_URL,
+            dom_id: '#swagger-ui',
+            deepLinking: true,
+            displayRequestDuration: true,
+            persistAuthorization: true,
+            presets: [window.SwaggerUIBundle.presets.apis, window.SwaggerUIStandalonePreset],
+            layout: 'BaseLayout',
+            requestInterceptor: (request) => {
+              const token = getAccessToken();
+              const isCustomerGraphApi = /\/api\/v1\//.test(request.url || '');
+              if (token && isCustomerGraphApi) {
+                request.headers = request.headers || {};
+                request.headers.Authorization = `Bearer ${token}`;
+              }
+              return request;
+            },
+            onComplete: () => {
+              const token = getAccessToken();
+              if (token) {
+                authorizeSwaggerUi(token);
+                setBanner('ready', 'Signed in with the same CustomerGraph UI session. Protected APIs automatically use your Bearer token.');
+              } else {
+                setBanner('missing', 'No CustomerGraph UI session found. Log in at http://localhost:5173 first, then refresh this page.');
+              }
+            },
+          });
+
+          if (initialToken) {
+            const retryUntilAuthorized = window.setInterval(() => {
+              if (authorizeSwaggerUi(initialToken)) window.clearInterval(retryUntilAuthorized);
+            }, 150);
+            window.setTimeout(() => window.clearInterval(retryUntilAuthorized), 5000);
+          }
+        }
+
+        window.addEventListener('storage', (event) => {
+          if (event.key === SESSION_STORAGE_KEY) window.location.reload();
+        });
+
+        if (!window.SwaggerUIBundle) {
+          setBanner('error', 'Swagger UI assets could not load. Check your internet connection and refresh this page.');
+          return;
+        }
+        initialise();
+      })();
+    </script>
+  </body>
+</html>

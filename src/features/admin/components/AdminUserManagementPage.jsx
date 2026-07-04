@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import './AdminUserManagementPage.css';
-import { logoutCustomerGraph, getCustomerGraphSession } from '../../auth/logic/authService.js';
+import { logoutCustomerGraph, getCustomerGraphSession, navigateTo } from '../../auth/logic/authService.js';
 import { useAdminUsers } from '../logic/useAdminUsers.js';
 
 const ROLE_OPTIONS = [
@@ -134,7 +134,13 @@ export default function AdminUserManagementPage() {
     if (result.ok) setDeleteTarget(null);
   };
 
-  const navItems = ['Dashboard', 'Customers', 'Risk', 'Support', 'Billing', 'Opportunities', 'AI Chat', 'Approvals', 'Admin', 'Settings'];
+  const navItems = [
+    { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Customers', path: '/customers' },
+    { label: 'Risk' }, { label: 'Support' }, { label: 'Billing' },
+    { label: 'Opportunities' }, { label: 'AI Chat' }, { label: 'Approvals' },
+    { label: 'Admin', path: '/admin/users' }, { label: 'Settings' },
+  ];
 
   return (
     <main className="admin-user-app">
@@ -153,13 +159,13 @@ export default function AdminUserManagementPage() {
             <nav className="admin-nav" aria-label="Primary navigation">
               {navItems.map((item) => (
                 <button
-                  key={item}
+                  key={item.label}
                   type="button"
-                  className={item === 'Admin' ? 'active' : ''}
-                  title={item === 'Admin' ? 'User management' : `${item} is not connected in this build`}
-                  onClick={() => item === 'Admin' && window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className={item.label === 'Admin' ? 'active' : ''}
+                  title={item.label === 'Admin' ? 'User management' : item.path ? item.label : `${item.label} UI will be added next`}
+                  onClick={() => item.path && navigateTo(item.path)}
                 >
-                  <span className="nav-dot" aria-hidden="true"></span>{item}
+                  <span className="nav-dot" aria-hidden="true"></span>{item.label}
                 </button>
               ))}
             </nav>

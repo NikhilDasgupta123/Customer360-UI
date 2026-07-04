@@ -8,9 +8,7 @@ export function useLoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
 
-  const togglePassword = () => {
-    setShowPassword((currentValue) => !currentValue);
-  };
+  const togglePassword = () => setShowPassword((currentValue) => !currentValue);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -18,16 +16,11 @@ export function useLoginForm() {
     setLoginMessage('');
 
     try {
-      // The backend determines the role from the user's database account.
-      // No role is accepted from the login UI.
+      // Role remains server-controlled. The UI only chooses a safe landing page
+      // after the backend has authenticated the user.
       const session = await loginCustomerGraph({ email, password });
-
-      if (session?.role === 'admin') {
-        navigateTo('/admin/users');
-        return;
-      }
-
-      setLoginMessage(`Login successful. Signed in as ${session?.roleLabel || 'user'}.`);
+      const dashboardRoles = new Set(['admin', 'account_manager']);
+      navigateTo(dashboardRoles.has(session?.role) ? '/dashboard' : '/customers');
     } catch (error) {
       setLoginMessage(error.message || 'Login failed');
     } finally {
