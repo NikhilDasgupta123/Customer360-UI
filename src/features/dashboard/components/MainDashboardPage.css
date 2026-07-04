@@ -35,14 +35,16 @@
 
 .dash-chart-panel { overflow: visible; }
 .dash-chart-wrap { position: relative; min-height: 221px; }
-.dash-health-svg { display: block; width: 100%; height: 221px; padding: 0 7px 3px 0; }
+.dash-health-svg { display: block; width: 100%; height: 221px; padding: 0 7px 0 0; }
 .dash-grid-line { stroke: #e9edf4; stroke-width: 1; }
-.dash-y-label, .dash-x-label { fill: #8993a4; font-family: inherit; font-size: 10.5px; }
-.dash-trend-line { fill: none; stroke: #2f6df2; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: opacity .16s ease; }
+.dash-y-label, .dash-x-label { fill: #8993a4; font-family: inherit; font-size: 8px; font-weight: 650; }
+.dash-x-label { font-size: 8.5px; }
+.dash-axis-baseline { stroke: #dfe6ef; stroke-width: 1; }
+.dash-trend-line { fill: none; stroke: #2f6df2; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 4px 8px rgba(47, 109, 242, .18)); transition: opacity .16s ease; }
 .dash-trend-line.is-hovered { opacity: .88; }
 .dash-chart-point-group { cursor: pointer; }
-.dash-trend-dot { fill: #2f6df2; stroke: #fff; stroke-width: 1.8; cursor: pointer; transition: r .16s ease, filter .16s ease; }
-.dash-trend-dot.is-active { filter: drop-shadow(0 3px 4px rgba(37, 99, 235, .32)); }
+.dash-trend-dot { fill: #2f6df2; stroke: #fff; stroke-width: 1.8; cursor: pointer; filter: drop-shadow(0 1px 2px rgba(37, 99, 235, .22)); transition: r .16s ease, filter .16s ease; }
+.dash-trend-dot.is-active { filter: drop-shadow(0 3px 5px rgba(37, 99, 235, .38)); }
 .dash-chart-tooltip { position: absolute; z-index: 8; min-width: 154px; padding: 9px 10px; border: 1px solid #d9e3f5; border-radius: 8px; color: #344057; background: #fff; box-shadow: 0 10px 22px rgba(15, 23, 42, .14); pointer-events: none; transform: translate(-50%, -112%); }
 .dash-chart-tooltip.align-left { transform: translate(0, -112%); }
 .dash-chart-tooltip.align-right { transform: translate(-100%, -112%); }
@@ -84,7 +86,7 @@
 @media (max-width: 500px) { .dash-page-head > div { width: 100%; } .dash-page-head p:not(.dash-eyebrow) { line-height: 1.45; } .dash-refresh-button { width: 100%; } .dash-metrics { grid-template-columns: 1fr; gap: 9px; } .dash-metric-card { min-height: 108px; padding: 14px 13px; } .dash-metric-card strong { margin-top: 14px; font-size: 24px; } .dash-metric-card small { margin-top: 9px; } .dash-panel { min-height: 238px; } .dash-chart-wrap, .dash-health-svg { min-height: 198px; height: 198px; } .dash-risk-row { grid-template-columns: minmax(0, 1fr) 28px 54px; font-size: 11px; } }
 
 
-/* Inline chart zoom: pinch on touch devices, Ctrl/⌘ + scroll on desktop, and drag to pan after zooming. */
+/* Inline chart zoom: pinch on touch devices, Ctrl/⌘ + scroll on desktop, and vertical drag to adjust the score range after zooming. */
 .dash-panel-heading {
   display: flex;
   align-items: center;
@@ -105,6 +107,87 @@
   overflow: hidden;
 }
 
+/* These labels sit in the chart's reserved bottom area instead of inside the
+   SVG. The SVG can be clipped safely during pinch/drag without hiding months. */
+.dash-chart-x-axis {
+  position: absolute;
+  z-index: 3;
+  right: 21px;
+  bottom: 7px;
+  left: 40px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: center;
+  color: #8993a4;
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.dash-chart-x-axis span {
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-chart-toolbar {
+  position: absolute;
+  z-index: 10;
+  top: 8px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #d7e2f4;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .97);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, .08);
+}
+
+.dash-chart-toolbutton {
+  min-width: 27px;
+  height: 25px;
+  padding: 0 7px;
+  border: 0;
+  border-right: 1px solid #d7e2f4;
+  color: #2f6df2;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.dash-chart-toolbutton:hover:not(:disabled) {
+  background: #edf3ff;
+}
+
+.dash-chart-toolbutton:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid #2f6df2;
+  outline-offset: -2px;
+}
+
+.dash-chart-toolbutton:disabled {
+  color: #b2bdcc;
+  cursor: not-allowed;
+}
+
+.dash-chart-toolbutton:last-child {
+  border-right: 0;
+}
+
+.dash-chart-reset-button {
+  padding-right: 8px;
+  padding-left: 8px;
+  font-size: 9.5px;
+}
+
 .dash-health-svg.is-interactive {
   cursor: zoom-in;
   touch-action: none;
@@ -121,54 +204,32 @@
   cursor: grabbing;
 }
 
-.dash-chart-zoom-controls {
+.dash-chart-zoom-badge {
   position: absolute;
   z-index: 9;
-  top: 8px;
+  top: 40px;
   right: 13px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px;
+  padding: 5px 9px;
   border: 1px solid #cddcf7;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, .96);
+  border-radius: 20px;
+  color: #2f6df2;
+  background: rgba(255, 255, 255, .94);
   box-shadow: 0 3px 10px rgba(15, 23, 42, .08);
-}
-
-.dash-chart-zoom-controls button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 25px;
-  height: 24px;
-  padding: 0 6px;
-  border: 0;
-  border-radius: 5px;
-  color: #2563eb;
-  background: transparent;
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
+  font-size: 10.5px;
   font-weight: 850;
-  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: dash-zoom-badge-in .14s ease;
 }
 
-.dash-chart-zoom-controls .dash-chart-reset-button {
-  min-width: auto;
-  padding: 0 7px;
-  font-size: 10px;
+.dash-chart-zoom-badge span {
+  color: #8993a4;
+  font-weight: 650;
 }
 
-.dash-chart-zoom-controls button:hover,
-.dash-chart-zoom-controls button:focus-visible {
-  background: #f4f8ff;
-  outline: 0;
-}
-
-.dash-chart-zoom-controls button:disabled {
-  color: #a4b2c8;
-  cursor: not-allowed;
+@keyframes dash-zoom-badge-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 760px) {
@@ -182,13 +243,40 @@
     display: none;
   }
 
-  .dash-chart-zoom-controls {
+  .dash-chart-x-axis {
+    right: 17px;
+    bottom: 6px;
+    left: 35px;
+    font-size: 8px;
+  }
+
+  .dash-chart-toolbar {
     top: 6px;
+    right: 8px;
+  }
+
+  .dash-chart-toolbutton {
+    min-width: 25px;
+    height: 23px;
+    padding: 0 6px;
+  }
+
+  .dash-chart-reset-button {
+    font-size: 9px;
+  }
+
+  .dash-chart-zoom-badge {
+    top: 36px;
     right: 9px;
+    font-size: 9.5px;
+  }
+
+  .dash-chart-zoom-badge span {
+    display: none;
   }
 }
 
-/* Fixed chart frame: axis labels stay visible while only the data plot zooms/pans. */
+/* Fixed chart frame: all six month labels stay visible; zoom adjusts the health-score scale only. */
 .dash-health-svg {
   overflow: visible;
 }
@@ -203,4 +291,8 @@
 
 .dash-x-label {
   pointer-events: none;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
 }
