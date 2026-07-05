@@ -97,6 +97,8 @@ function Icon({ name, size = 17 }) {
     close: <><path d="m6 6 12 12M18 6 6 18" /></>,
     logout: <><path d="M10 17l5-5-5-5" /><path d="M15 12H3" /><path d="M21 3v18" /></>,
     check: <path d="m5 12 4.2 4.2L19 6.5" />,
+    sparkles: <><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4L12 3Z" /><path d="m5 15 .8 2.2L8 18l-2.2.8L5 21l-.8-2.2L2 18l2.2-.8L5 15Z" /><path d="m19 14 .8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14Z" /></>,
+    arrowRight: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
   };
   return <svg {...common}>{paths[name] || paths.dashboard}</svg>;
 }

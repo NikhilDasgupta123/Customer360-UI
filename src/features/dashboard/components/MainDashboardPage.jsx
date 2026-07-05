@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomerGraphAppShell, { Icon } from '../../layout/components/CustomerGraphAppShell.jsx';
-import { navigateTo } from '../../auth/logic/authService.js';
+import { getCustomerGraphSession, navigateTo } from '../../auth/logic/authService.js';
+import { analyseDashboardWidget } from '../../ai/logic/aiAnalysisService.js';
 import { useDashboardSummary } from '../logic/useDashboardSummary.js';
 import './MainDashboardPage.css';
 
@@ -609,49 +610,326 @@ function RiskPill({ level }) {
   return <span className={`dash-risk-pill ${normalized}`}>{label}</span>;
 }
 
+
+const DASHBOARD_AI_WIDGETS = {
+  total_customers: {
+    title: 'Customer base overview',
+    eyebrow: 'TOTAL CUSTOMERS',
+    loading: 'Reviewing active customer coverage and portfolio concentration.',
+  },
+  high_risk_customers: {
+    title: 'High-risk customer review',
+    eyebrow: 'HIGH-RISK CUSTOMERS',
+    loading: 'Reviewing current risk signals and the accounts that need attention.',
+  },
+  upcoming_renewals: {
+    title: 'Upcoming renewal review',
+    eyebrow: 'UPCOMING RENEWALS',
+    loading: 'Reviewing renewals due in the next 30 days and their risk context.',
+  },
+  open_critical_tickets: {
+    title: 'Critical support review',
+    eyebrow: 'OPEN CRITICAL TICKETS',
+    loading: 'Reviewing open critical support signals and affected accounts.',
+  },
+  delayed_invoices: {
+    title: 'Delayed invoice review',
+    eyebrow: 'DELAYED INVOICES',
+    loading: 'Reviewing overdue billing signals and the accounts requiring follow-up.',
+  },
+  upsell_opportunities: {
+    title: 'Upsell opportunity review',
+    eyebrow: 'UPSELL OPPORTUNITIES',
+    loading: 'Reviewing open expansion opportunities and their customer context.',
+  },
+  revenue_at_risk: {
+    title: 'Revenue-at-risk review',
+    eyebrow: 'REVENUE AT RISK',
+    loading: 'Reviewing high-risk revenue exposure and the most urgent account actions.',
+  },
+  health_score_trend: {
+    title: 'Health score trend review',
+    eyebrow: 'HEALTH SCORE TREND',
+    loading: 'Reviewing the six-month health-score movement and material changes.',
+  },
+  top_high_risk_customers: {
+    title: 'Top high-risk accounts',
+    eyebrow: 'TOP 5 HIGH-RISK CUSTOMERS',
+    loading: 'Reviewing the five highest-risk customers and their next-best actions.',
+  },
+};
+
+const WIDGET_PROGRESS_STAGES = [
+  'Reading the current dashboard data',
+  'Checking the relevant customer signals',
+  'Preparing a concise AI brief',
+];
+
+function formatAiTimestamp(value) {
+  if (!value) return '';
+  const timestamp = new Date(value);
+  if (Number.isNaN(timestamp.getTime())) return '';
+  return new Intl.DateTimeFormat('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(timestamp);
+}
+
+function widgetStatusLabel(status) {
+  const labels = {
+    stable: 'Stable',
+    attention: 'Needs attention',
+    critical: 'Critical',
+    opportunity: 'Opportunity',
+    info: 'Information',
+  };
+  return labels[String(status || '').toLowerCase()] || 'AI insight';
+}
+
+function AiWidgetProgress({ widget, activeStage }) {
+  return (
+    <div className="dash-widget-progress" aria-live="polite">
+      <div className="dash-widget-progress-heading">
+        <span className="dash-widget-spinner" aria-hidden="true" />
+        <div>
+          <strong>Analysing {widget.title}</strong>
+          <p>{widget.loading}</p>
+        </div>
+      </div>
+      <ol className="dash-widget-progress-list">
+        {WIDGET_PROGRESS_STAGES.map((stage, index) => {
+          const isComplete = index < activeStage;
+          const isCurrent = index === activeStage;
+          return (
+            <li key={stage} className={`${isComplete ? 'is-complete' : ''} ${isCurrent ? 'is-current' : ''}`}>
+              <span className="dash-widget-progress-mark" aria-hidden="true">
+                {isComplete ? <Icon name="check" size={13} /> : index + 1}
+              </span>
+              <span>{stage}</span>
+              {isCurrent ? <em>In progress</em> : null}
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+function AiWidgetDrawer({
+  widget,
+  result,
+  error,
+  isAnalysing,
+  activeStage,
+  onClose,
+  onAnalyseAgain,
+}) {
+  if (!widget) return null;
+
+  return (
+    <div className="dash-widget-layer" role="presentation">
+      <button type="button" className="dash-widget-backdrop" onClick={onClose} aria-label="Close AI insight" />
+      <aside className="dash-widget-drawer" role="dialog" aria-modal="true" aria-labelledby="dashboard-ai-widget-title">
+        <header className="dash-widget-drawer-header">
+          <div className="dash-widget-drawer-title">
+            <span><Icon name="sparkles" size={17} /></span>
+            <div>
+              <p>{widget.eyebrow}</p>
+              <h3 id="dashboard-ai-widget-title">{widget.title}</h3>
+            </div>
+          </div>
+          <button type="button" className="dash-widget-close" onClick={onClose} aria-label="Close AI insight">
+            <Icon name="close" size={17} />
+          </button>
+        </header>
+
+        {isAnalysing ? <AiWidgetProgress widget={widget} activeStage={activeStage} /> : null}
+
+        {!isAnalysing && error ? (
+          <div className="dash-widget-error" role="alert">
+            <strong>Analysis was not completed.</strong>
+            <span>{error}</span>
+            <button type="button" onClick={onAnalyseAgain}>Try again</button>
+          </div>
+        ) : null}
+
+        {!isAnalysing && !error && result ? (
+          <div className="dash-widget-result">
+            <div className="dash-widget-result-topline">
+              <span className={`dash-widget-status ${String(result.status || 'info').toLowerCase()}`}>
+                <span aria-hidden="true" />
+                {widgetStatusLabel(result.status)}
+              </span>
+              {result.generated_at ? <small>Analysed {formatAiTimestamp(result.generated_at)}</small> : null}
+            </div>
+
+            <section className="dash-widget-result-section">
+              <h4>AI brief</h4>
+              <p>{result.summary || 'No AI summary was returned for this dashboard area.'}</p>
+            </section>
+
+            {Array.isArray(result.evidence) && result.evidence.length ? (
+              <section className="dash-widget-result-section">
+                <h4>Based on current data</h4>
+                <ul className="dash-widget-evidence-list">
+                  {result.evidence.slice(0, 3).map((item, index) => (
+                    <li key={`${item}-${index}`}><Icon name="check" size={14} /><span>{item}</span></li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            <section className="dash-widget-next-action">
+              <span><Icon name="sparkles" size={15} /></span>
+              <div>
+                <h4>Recommended next step</h4>
+                <p>{result.recommended_action || 'Review this dashboard area with the responsible owner.'}</p>
+              </div>
+            </section>
+
+            <footer className="dash-widget-result-footer">
+              <button type="button" className="dash-widget-analyse-again" onClick={onAnalyseAgain}>
+                <Icon name="sparkles" size={14} />
+                <span>Analyse again</span>
+              </button>
+              <small>AI guidance requires human review before action.</small>
+            </footer>
+          </div>
+        ) : null}
+      </aside>
+    </div>
+  );
+}
+
+function AiWidgetTrigger({ section, label, onClick, disabled, compact = false }) {
+  return (
+    <button
+      type="button"
+      className={`dash-widget-trigger ${compact ? 'is-compact' : ''}`}
+      onClick={() => onClick(section)}
+      disabled={disabled}
+      aria-label={`Analyse ${label} with AI`}
+      title={`Analyse ${label} with AI`}
+    >
+      <Icon name="sparkles" size={compact ? 15 : 16} />
+    </button>
+  );
+}
+
 export default function MainDashboardPage() {
   const { summary, isLoading, error, refresh } = useDashboardSummary();
+  const session = getCustomerGraphSession();
+  const canAnalyseWidgets = session?.role === 'admin';
+  const [activeWidgetSection, setActiveWidgetSection] = useState(null);
+  const [widgetResults, setWidgetResults] = useState({});
+  const [widgetError, setWidgetError] = useState('');
+  const [isWidgetAnalysing, setIsWidgetAnalysing] = useState(false);
+  const [widgetAnalysisStage, setWidgetAnalysisStage] = useState(0);
+  const stageTimersRef = useRef([]);
+
+  const clearStageTimers = useCallback(() => {
+    stageTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    stageTimersRef.current = [];
+  }, []);
+
+  useEffect(() => () => clearStageTimers(), [clearStageTimers]);
+
+  const startWidgetAnalysis = useCallback(async (section) => {
+    if (!canAnalyseWidgets || isWidgetAnalysing || !DASHBOARD_AI_WIDGETS[section]) return;
+    clearStageTimers();
+    setActiveWidgetSection(section);
+    setWidgetError('');
+    setIsWidgetAnalysing(true);
+    setWidgetAnalysisStage(0);
+    stageTimersRef.current = [
+      window.setTimeout(() => setWidgetAnalysisStage(1), 650),
+      window.setTimeout(() => setWidgetAnalysisStage(2), 1500),
+    ];
+
+    try {
+      const result = await analyseDashboardWidget(section);
+      setWidgetResults((previous) => ({ ...previous, [section]: result }));
+      setWidgetAnalysisStage(WIDGET_PROGRESS_STAGES.length);
+    } catch (requestError) {
+      setWidgetError(requestError.message || 'This AI analysis could not be completed.');
+    } finally {
+      clearStageTimers();
+      setIsWidgetAnalysing(false);
+    }
+  }, [canAnalyseWidgets, clearStageTimers, isWidgetAnalysing]);
+
+  const closeWidgetDrawer = useCallback(() => {
+    if (isWidgetAnalysing) return;
+    setActiveWidgetSection(null);
+    setWidgetError('');
+  }, [isWidgetAnalysing]);
+
+  const activeWidget = activeWidgetSection ? DASHBOARD_AI_WIDGETS[activeWidgetSection] : null;
+  const activeWidgetResult = activeWidgetSection ? widgetResults[activeWidgetSection] : null;
+
   const metricCards = [
-    { key: 'customers', label: 'Total Customers', value: number(summary.total_customers), note: 'All active customers', icon: 'customers', tone: 'green', to: '/customers' },
-    { key: 'risk', label: 'High Risk Customers', value: number(summary.high_risk_customers), note: 'Needs attention', icon: 'risk', tone: 'red', to: '/customers?risk_level=high' },
-    { key: 'renewals', label: 'Upcoming Renewals', value: number(summary.upcoming_renewals_next_30_days), note: 'Next 30 days', icon: 'approvals', tone: 'blue', to: '/customers?renewal_within_days=30' },
-    { key: 'tickets', label: 'Open Critical Tickets', value: number(summary.open_critical_tickets), note: 'Open right now', icon: 'support', tone: 'red', to: '/customers' },
-    { key: 'invoices', label: 'Delayed Invoices', value: number(summary.delayed_invoices_count), note: inr(summary.delayed_invoices_amount), icon: 'billing', tone: 'blue', to: '/customers' },
-    { key: 'upsell', label: 'Upsell Opportunities', value: number(summary.upsell_opportunities_count), note: inr(summary.upsell_potential_revenue), icon: 'opportunities', tone: 'green', to: '/customers' },
-    { key: 'revenue', label: 'Revenue at Risk', value: inr(summary.revenue_at_risk), note: 'High + critical portfolio', icon: 'risk', tone: 'ink', to: '/customers?risk_level=high', wide: true },
+    { key: 'customers', section: 'total_customers', label: 'Total Customers', value: number(summary.total_customers), note: 'All active customers', icon: 'customers', tone: 'green', to: '/customers' },
+    { key: 'risk', section: 'high_risk_customers', label: 'High Risk Customers', value: number(summary.high_risk_customers), note: 'Needs attention', icon: 'risk', tone: 'red', to: '/customers?risk_level=high' },
+    { key: 'renewals', section: 'upcoming_renewals', label: 'Upcoming Renewals', value: number(summary.upcoming_renewals_next_30_days), note: 'Next 30 days', icon: 'approvals', tone: 'blue', to: '/customers?renewal_within_days=30' },
+    { key: 'tickets', section: 'open_critical_tickets', label: 'Open Critical Tickets', value: number(summary.open_critical_tickets), note: 'Open right now', icon: 'support', tone: 'red', to: '/customers' },
+    { key: 'invoices', section: 'delayed_invoices', label: 'Delayed Invoices', value: number(summary.delayed_invoices_count), note: inr(summary.delayed_invoices_amount), icon: 'billing', tone: 'blue', to: '/customers' },
+    { key: 'upsell', section: 'upsell_opportunities', label: 'Upsell Opportunities', value: number(summary.upsell_opportunities_count), note: inr(summary.upsell_potential_revenue), icon: 'opportunities', tone: 'green', to: '/customers' },
+    { key: 'revenue', section: 'revenue_at_risk', label: 'Revenue at Risk', value: inr(summary.revenue_at_risk), note: 'High + critical portfolio', icon: 'risk', tone: 'ink', to: '/customers?risk_level=high', wide: true },
   ];
 
   return (
-    <CustomerGraphAppShell activeNav="dashboard" contentMode="fixed">
+    <CustomerGraphAppShell activeNav="dashboard" contentMode="scrollable">
       <section className="dash-page-head">
         <div>
           <p className="dash-eyebrow">PORTFOLIO OVERVIEW</p>
           <h2>Customer health at a glance</h2>
           <p>Live business intelligence from the connected customer graph.</p>
         </div>
-        <button className="dash-refresh-button" type="button" onClick={refresh} disabled={isLoading}>{isLoading ? 'Loading…' : '↻ Refresh'}</button>
+        <div className="dash-head-actions">
+          <button className="dash-refresh-button" type="button" onClick={refresh} disabled={isLoading}>{isLoading ? 'Loading…' : '↻ Refresh'}</button>
+        </div>
       </section>
       {error ? <div className="dash-feedback error">{error}</div> : null}
+
       <section className={`dash-metrics ${isLoading ? 'is-loading' : ''}`} aria-label="Main dashboard metrics">
         {metricCards.map((card) => (
-          <button key={card.key} type="button" className={`dash-metric-card ${card.tone} ${card.wide ? 'wide' : ''}`} onClick={() => navigateTo(card.to)}>
-            <span className="dash-metric-icon"><Icon name={card.icon} size={16} /></span>
-            <span className="dash-metric-label">{card.label}</span>
-            <strong>{isLoading ? '—' : card.value}</strong>
-            <small>{card.note}</small>
-          </button>
+          <article key={card.key} className={`dash-metric-card ${card.tone} ${card.wide ? 'wide' : ''}`}>
+            <button type="button" className="dash-metric-main" onClick={() => navigateTo(card.to)}>
+              <span className="dash-metric-icon"><Icon name={card.icon} size={16} /></span>
+              <span className="dash-metric-label">{card.label}</span>
+              <strong>{isLoading ? '—' : card.value}</strong>
+              <small>{card.note}</small>
+            </button>
+            {canAnalyseWidgets ? (
+              <AiWidgetTrigger section={card.section} label={card.label} onClick={startWidgetAnalysis} disabled={isWidgetAnalysing} />
+            ) : null}
+          </article>
         ))}
       </section>
+
       <section className="dash-bottom-grid">
         <article className="dash-panel dash-chart-panel">
-          <header className="dash-panel-heading">
-            <h3>Health Score Trend <span>(Last 6 Months)</span></h3>
-            <span className="dash-chart-gesture-hint">Use + / − · pinch or Ctrl/⌘ + scroll</span>
+          <header>
+            <div className="dash-panel-heading">
+              <h3>Health Score Trend <span>(Last 6 Months)</span></h3>
+              <div className="dash-panel-tools">
+                <span className="dash-chart-gesture-hint">Pinch / Ctrl + scroll to zoom · Months stay visible</span>
+                {canAnalyseWidgets ? <AiWidgetTrigger compact section="health_score_trend" label="Health Score Trend" onClick={startWidgetAnalysis} disabled={isWidgetAnalysing} /> : null}
+              </div>
+            </div>
           </header>
-          <TrendChart points={summary.health_score_trend} />
+          {isLoading ? <p className="dash-chart-empty">Loading health score trend…</p> : <TrendChart points={summary.health_score_trend} />}
         </article>
+
         <article className="dash-panel dash-risk-panel">
-          <header><h3>Top 5 High-Risk Customers</h3></header>
+          <header>
+            <div className="dash-panel-heading">
+              <h3>Top 5 High-Risk Customers</h3>
+              {canAnalyseWidgets ? <AiWidgetTrigger compact section="top_high_risk_customers" label="Top 5 High-Risk Customers" onClick={startWidgetAnalysis} disabled={isWidgetAnalysing} /> : null}
+            </div>
+          </header>
           <div className="dash-risk-list">
             {summary.top_high_risk_customers?.length ? summary.top_high_risk_customers.map((customer) => (
               <button className="dash-risk-row" type="button" key={customer.customer_id || customer.customer_name} onClick={() => navigateTo(`/customers?search=${encodeURIComponent(customer.customer_name)}`)}>
@@ -664,6 +942,16 @@ export default function MainDashboardPage() {
           <button type="button" className="dash-view-all" onClick={() => navigateTo('/customers?risk_level=high')}>View all ›</button>
         </article>
       </section>
+
+      <AiWidgetDrawer
+        widget={activeWidget}
+        result={activeWidgetResult}
+        error={widgetError}
+        isAnalysing={isWidgetAnalysing}
+        activeStage={widgetAnalysisStage}
+        onClose={closeWidgetDrawer}
+        onAnalyseAgain={() => activeWidgetSection && startWidgetAnalysis(activeWidgetSection)}
+      />
     </CustomerGraphAppShell>
   );
 }
