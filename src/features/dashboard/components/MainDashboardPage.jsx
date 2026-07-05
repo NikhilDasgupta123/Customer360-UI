@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CustomerGraphAppShell, { Icon } from '../../layout/components/CustomerGraphAppShell.jsx';
 import { getCustomerGraphSession, navigateTo } from '../../auth/logic/authService.js';
-import { analyseDashboardWidget } from '../../ai/logic/aiAnalysisService.js';
+import { streamDashboardWidget } from '../../ai/logic/aiAnalysisService.js';
 import { useDashboardSummary } from '../logic/useDashboardSummary.js';
 import './MainDashboardPage.css';
 
@@ -660,10 +660,124 @@ const DASHBOARD_AI_WIDGETS = {
 };
 
 const WIDGET_PROGRESS_STAGES = [
-  'Reading the current dashboard data',
-  'Checking the relevant customer signals',
-  'Preparing a concise AI brief',
+  { key: 'dashboard_data', label: 'Reading the current dashboard data' },
+  { key: 'customer_signals', label: 'Checking the relevant customer signals' },
+  { key: 'ai_brief', label: 'Generating a validated AI brief' },
 ];
+
+const WIDGET_STAGE_INDEX = {
+  starting: 0,
+  dashboard_data: 0,
+  customer_signals: 1,
+  ai_brief: 2,
+  validation: 2,
+  completed: 2,
+};
+
+const DASHBOARD_WIDGET_ACTION_TARGETS = {
+  total_customers: { path: '/customers', label: 'Open customer directory' },
+  high_risk_customers: { path: '/customers?risk_level=high', label: 'Review high-risk customers' },
+  upcoming_renewals: { path: '/customers?renewal_within_days=30', label: 'Review renewals due soon' },
+  open_critical_tickets: { path: '/customers?risk_level=high', label: 'Review affected high-risk accounts' },
+  delayed_invoices: { path: '/customers', label: 'Open customers for invoice review' },
+  upsell_opportunities: { path: '/customers', label: 'Review expansion-ready customers' },
+  revenue_at_risk: { path: '/customers?risk_level=high', label: 'Review revenue-at-risk accounts' },
+  health_score_trend: { path: '/customers?sort_by=health_score&sort_direction=asc', label: 'Review lowest health-score accounts' },
+  top_high_risk_customers: { path: '/customers?risk_level=high', label: 'Open top high-risk customers' },
+};
+
+function dashboardWidgetActionTarget(section) {
+  return DASHBOARD_WIDGET_ACTION_TARGETS[section] || { path: '/customers', label: 'Open customer directory' };
+}
+
+function streamResultSeed(section) {
+  return {
+    section,
+    status: 'info',
+    summary: '',
+    evidence: [],
+    recommended_action: '',
+    generated_at: '',
+    streamProgress: { stage: 'starting', message: 'Connecting to the AI analysis service.', progress: 2 },
+  };
+}
+
+function isImportantToken(value) {
+  return /^(?:₹[\d,.]+(?:\s?(?:Cr|L))?|\$[\d,.]+(?:\s?(?:M|K))?|\d+(?:\.\d+)?%|\d+\s+(?:customer\(s\)|customers?|tickets?|renewals?|invoices?|days?|points?)|critical|high|urgent)$/i.test(value);
+}
+
+function ImportantText({ children }) {
+  const textValue = String(children || '');
+  const parts = textValue.split(/(₹[\d,.]+(?:\s?(?:Cr|L))?|\$[\d,.]+(?:\s?(?:M|K))?|\d+(?:\.\d+)?%|\d+\s+(?:customer\(s\)|customers?|tickets?|renewals?|invoices?|days?|points?)|\b(?:critical|high|urgent)\b)/gi);
+  return parts.map((part, index) => (
+    isImportantToken(part)
+      ? <strong key={`${part}-${index}`} className="dash-widget-emphasis">{part}</strong>
+      : <span key={`${part}-${index}`}>{part}</span>
+  ));
+}
+
+function briefPoints(summary) {
+  const text = String(summary || '').replace(/\s+/g, ' ').trim();
+  if (!text) return [];
+  const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+  return sentences.map((item) => item.trim()).filter(Boolean).slice(0, 2);
+}
+
+function readableMetricLabel(value) {
+  const labels = {
+    revenue_at_risk: 'Revenue at risk',
+    high_or_critical_customers: 'High or critical customers',
+    high_risk_customers: 'High-risk customers',
+    open_critical_tickets: 'Open critical tickets',
+    upcoming_renewals: 'Upcoming renewals',
+    delayed_invoices: 'Delayed invoices',
+    upsell_opportunities: 'Upsell opportunities',
+    health_score: 'Health score',
+    total_customers: 'Active customers',
+  };
+  const key = String(value || '').trim().toLowerCase();
+  return labels[key] || key.replace(/[_-]+/g, ' ').replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function parseSignalRecord(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) return value;
+  const text = String(value || '').trim();
+  if (!text.startsWith('{') || !text.endsWith('}')) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Defensive support for Python-style dictionaries produced by local LLMs.
+    const record = {};
+    const pairPattern = /['"]?([A-Za-z][A-Za-z0-9_]*)['"]?\s*:\s*(?:['"]([^'"]*)['"]|([^,}]+))/g;
+    for (const match of text.matchAll(pairPattern)) {
+      record[match[1]] = String(match[2] ?? match[3] ?? '').trim();
+    }
+    return Object.keys(record).length ? record : null;
+  }
+}
+
+function presentSignal(value, index) {
+  const record = parseSignalRecord(value);
+  if (record) {
+    const label = readableMetricLabel(record.metric || record.label || record.name || 'Important signal');
+    const signalValue = record.text || record.description || record.value || record.count || record.amount || record.score || record.days || '';
+    return {
+      label,
+      detail: signalValue ? `${String(signalValue).replace(/\.$/, '')}.` : 'Verified dashboard signal.',
+    };
+  }
+
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  const colonIndex = text.indexOf(':');
+  if (colonIndex > 0 && colonIndex < 68) {
+    return {
+      label: text.slice(0, colonIndex).trim(),
+      detail: text.slice(colonIndex + 1).trim() || 'Verified dashboard signal.',
+    };
+  }
+  return { label: `Signal ${index + 1}`, detail: text || 'Verified dashboard signal.' };
+}
+
 
 function formatAiTimestamp(value) {
   if (!value) return '';
@@ -688,27 +802,33 @@ function widgetStatusLabel(status) {
   return labels[String(status || '').toLowerCase()] || 'AI insight';
 }
 
-function AiWidgetProgress({ widget, activeStage }) {
+function AiWidgetProgress({ widget, progressState }) {
+  const activeStage = WIDGET_STAGE_INDEX[progressState?.stage] ?? 0;
+  const progressValue = Math.max(0, Math.min(100, Number(progressState?.progress || 0)));
   return (
     <div className="dash-widget-progress" aria-live="polite">
       <div className="dash-widget-progress-heading">
         <span className="dash-widget-spinner" aria-hidden="true" />
         <div>
+          <div className="dash-widget-live-label"><span aria-hidden="true" />Analysis in progress</div>
           <strong>Analysing {widget.title}</strong>
-          <p>{widget.loading}</p>
+          <p>{progressState?.message || widget.loading}</p>
         </div>
+      </div>
+      <div className="dash-widget-progress-meter" aria-label={`${progressValue}% complete`}>
+        <span style={{ width: `${progressValue}%` }} />
       </div>
       <ol className="dash-widget-progress-list">
         {WIDGET_PROGRESS_STAGES.map((stage, index) => {
-          const isComplete = index < activeStage;
-          const isCurrent = index === activeStage;
+          const isComplete = index < activeStage || progressState?.stage === 'completed';
+          const isCurrent = index === activeStage && !isComplete;
           return (
-            <li key={stage} className={`${isComplete ? 'is-complete' : ''} ${isCurrent ? 'is-current' : ''}`}>
+            <li key={stage.key} className={`${isComplete ? 'is-complete' : ''} ${isCurrent ? 'is-current' : ''}`}>
               <span className="dash-widget-progress-mark" aria-hidden="true">
                 {isComplete ? <Icon name="check" size={13} /> : index + 1}
               </span>
-              <span>{stage}</span>
-              {isCurrent ? <em>In progress</em> : null}
+              <span>{stage.label}</span>
+              {isCurrent ? <em>{progressValue}%</em> : null}
             </li>
           );
         })}
@@ -717,16 +837,93 @@ function AiWidgetProgress({ widget, activeStage }) {
   );
 }
 
+function AiWidgetResult({ widget, section, result, isStreaming, onAnalyseAgain, onRecommendedAction }) {
+  const summary = result?.summary || '';
+  const brief = briefPoints(summary);
+  const evidence = Array.isArray(result?.evidence)
+    ? result.evidence.filter(Boolean).slice(0, 3).map((item, index) => presentSignal(item, index))
+    : [];
+  const actionTarget = dashboardWidgetActionTarget(section);
+  const action = result?.recommended_action || '';
+
+  return (
+    <div className={`dash-widget-result ${isStreaming ? 'is-streaming' : ''}`} aria-live="polite">
+      <div className="dash-widget-result-topline">
+        <span className={`dash-widget-status ${String(result?.status || 'info').toLowerCase()}`}>
+          <span aria-hidden="true" />
+          {isStreaming ? 'Analysis in progress' : widgetStatusLabel(result?.status)}
+        </span>
+        {result?.generated_at ? <small>Analysed {formatAiTimestamp(result.generated_at)}</small> : <small>Validated results appear as they are ready</small>}
+      </div>
+
+      <section className="dash-widget-result-section dash-widget-brief-section">
+        <div className="dash-widget-section-title"><h4>AI brief</h4></div>
+        {brief.length ? (
+          <ul className="dash-widget-brief-list">
+            {brief.map((item, index) => (
+              <li key={`${item}-${index}`}><span aria-hidden="true" /> <p><ImportantText>{item}</ImportantText>{isStreaming && index === brief.length - 1 ? <span className="dash-widget-typing-caret" aria-hidden="true" /> : null}</p></li>
+            ))}
+          </ul>
+        ) : <p className="is-pending">Preparing the validated business brief…</p>}
+      </section>
+
+      <section className="dash-widget-result-section dash-widget-signals-section">
+        <div className="dash-widget-section-title"><h4>Important signals</h4>{evidence.length ? <span className="dash-widget-count-blob">{evidence.length} verified</span> : null}</div>
+        {evidence.length ? (
+          <ul className="dash-widget-evidence-list">
+            {evidence.map((item, index) => (
+              <li key={`${item.label}-${item.detail}-${index}`}>
+                <span className="dash-widget-signal-blob">{item.label}</span>
+                <p><ImportantText>{item.detail}</ImportantText></p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="dash-widget-evidence-pending">{isStreaming ? 'Verified signals will appear here one by one.' : 'No additional evidence was returned for this dashboard area.'}</p>
+        )}
+      </section>
+
+      <button
+        type="button"
+        className={`dash-widget-next-action ${action ? 'is-ready' : ''}`}
+        onClick={onRecommendedAction}
+        disabled={!action}
+        title={action ? actionTarget.label : 'The recommended step will become available when the analysis is complete.'}
+      >
+        <span><Icon name="sparkles" size={15} /></span>
+        <div>
+          <div className="dash-widget-section-title"><h4>Recommended next step</h4><small>{action ? 'Open related customers' : 'Preparing action'}</small></div>
+          <p>{action ? <ImportantText>{action}</ImportantText> : 'The next best action is being prepared from the verified dashboard signals.'}</p>
+          {action ? <strong className="dash-widget-open-action">Click to {actionTarget.label}<Icon name="arrowRight" size={14} /></strong> : null}
+        </div>
+      </button>
+
+      {!isStreaming ? (
+        <footer className="dash-widget-result-footer">
+          <button type="button" className="dash-widget-analyse-again" onClick={onAnalyseAgain}>
+            <Icon name="sparkles" size={14} />
+            <span>Analyse again</span>
+          </button>
+          <small>AI guidance is advisory and should be reviewed before action.</small>
+        </footer>
+      ) : null}
+    </div>
+  );
+}
+
 function AiWidgetDrawer({
   widget,
+  section,
   result,
+  streamResult,
   error,
   isAnalysing,
-  activeStage,
   onClose,
   onAnalyseAgain,
+  onRecommendedAction,
 }) {
   if (!widget) return null;
+  const displayResult = isAnalysing ? streamResult : result;
 
   return (
     <div className="dash-widget-layer" role="presentation">
@@ -740,12 +937,12 @@ function AiWidgetDrawer({
               <h3 id="dashboard-ai-widget-title">{widget.title}</h3>
             </div>
           </div>
-          <button type="button" className="dash-widget-close" onClick={onClose} aria-label="Close AI insight">
+          <button type="button" className="dash-widget-close" onClick={onClose} aria-label="Close AI insight" disabled={isAnalysing}>
             <Icon name="close" size={17} />
           </button>
         </header>
 
-        {isAnalysing ? <AiWidgetProgress widget={widget} activeStage={activeStage} /> : null}
+        {isAnalysing ? <AiWidgetProgress widget={widget} progressState={streamResult?.streamProgress} /> : null}
 
         {!isAnalysing && error ? (
           <div className="dash-widget-error" role="alert">
@@ -755,48 +952,15 @@ function AiWidgetDrawer({
           </div>
         ) : null}
 
-        {!isAnalysing && !error && result ? (
-          <div className="dash-widget-result">
-            <div className="dash-widget-result-topline">
-              <span className={`dash-widget-status ${String(result.status || 'info').toLowerCase()}`}>
-                <span aria-hidden="true" />
-                {widgetStatusLabel(result.status)}
-              </span>
-              {result.generated_at ? <small>Analysed {formatAiTimestamp(result.generated_at)}</small> : null}
-            </div>
-
-            <section className="dash-widget-result-section">
-              <h4>AI brief</h4>
-              <p>{result.summary || 'No AI summary was returned for this dashboard area.'}</p>
-            </section>
-
-            {Array.isArray(result.evidence) && result.evidence.length ? (
-              <section className="dash-widget-result-section">
-                <h4>Based on current data</h4>
-                <ul className="dash-widget-evidence-list">
-                  {result.evidence.slice(0, 3).map((item, index) => (
-                    <li key={`${item}-${index}`}><Icon name="check" size={14} /><span>{item}</span></li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-
-            <section className="dash-widget-next-action">
-              <span><Icon name="sparkles" size={15} /></span>
-              <div>
-                <h4>Recommended next step</h4>
-                <p>{result.recommended_action || 'Review this dashboard area with the responsible owner.'}</p>
-              </div>
-            </section>
-
-            <footer className="dash-widget-result-footer">
-              <button type="button" className="dash-widget-analyse-again" onClick={onAnalyseAgain}>
-                <Icon name="sparkles" size={14} />
-                <span>Analyse again</span>
-              </button>
-              <small>AI guidance requires human review before action.</small>
-            </footer>
-          </div>
+        {!error && displayResult ? (
+          <AiWidgetResult
+            widget={widget}
+            section={section}
+            result={displayResult}
+            isStreaming={isAnalysing}
+            onAnalyseAgain={onAnalyseAgain}
+            onRecommendedAction={onRecommendedAction}
+          />
         ) : null}
       </aside>
     </div>
@@ -824,47 +988,80 @@ export default function MainDashboardPage() {
   const canAnalyseWidgets = session?.role === 'admin';
   const [activeWidgetSection, setActiveWidgetSection] = useState(null);
   const [widgetResults, setWidgetResults] = useState({});
+  const [widgetStream, setWidgetStream] = useState(null);
   const [widgetError, setWidgetError] = useState('');
   const [isWidgetAnalysing, setIsWidgetAnalysing] = useState(false);
-  const [widgetAnalysisStage, setWidgetAnalysisStage] = useState(0);
-  const stageTimersRef = useRef([]);
-
-  const clearStageTimers = useCallback(() => {
-    stageTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-    stageTimersRef.current = [];
-  }, []);
-
-  useEffect(() => () => clearStageTimers(), [clearStageTimers]);
 
   const startWidgetAnalysis = useCallback(async (section) => {
     if (!canAnalyseWidgets || isWidgetAnalysing || !DASHBOARD_AI_WIDGETS[section]) return;
-    clearStageTimers();
     setActiveWidgetSection(section);
     setWidgetError('');
+    setWidgetStream(streamResultSeed(section));
     setIsWidgetAnalysing(true);
-    setWidgetAnalysisStage(0);
-    stageTimersRef.current = [
-      window.setTimeout(() => setWidgetAnalysisStage(1), 650),
-      window.setTimeout(() => setWidgetAnalysisStage(2), 1500),
-    ];
 
     try {
-      const result = await analyseDashboardWidget(section);
+      const result = await streamDashboardWidget(section, {
+        onProgress: (progress) => {
+          setWidgetStream((current) => ({
+            ...(current || streamResultSeed(section)),
+            streamProgress: progress,
+          }));
+        },
+        onStatus: (statusData) => {
+          setWidgetStream((current) => ({
+            ...(current || streamResultSeed(section)),
+            ...statusData,
+          }));
+        },
+        onBriefChunk: ({ text }) => {
+          setWidgetStream((current) => ({
+            ...(current || streamResultSeed(section)),
+            summary: `${current?.summary || ''}${text || ''}`,
+          }));
+        },
+        onSignal: ({ text }) => {
+          if (!text) return;
+          setWidgetStream((current) => {
+            const currentEvidence = Array.isArray(current?.evidence) ? current.evidence : [];
+            return currentEvidence.includes(text)
+              ? current
+              : { ...(current || streamResultSeed(section)), evidence: [...currentEvidence, text] };
+          });
+        },
+        onRecommendedAction: ({ text }) => {
+          setWidgetStream((current) => ({
+            ...(current || streamResultSeed(section)),
+            recommended_action: text || '',
+          }));
+        },
+        onComplete: (completed) => {
+          setWidgetResults((previous) => ({ ...previous, [section]: completed }));
+          setWidgetStream((current) => ({ ...(current || streamResultSeed(section)), ...completed }));
+        },
+      });
       setWidgetResults((previous) => ({ ...previous, [section]: result }));
-      setWidgetAnalysisStage(WIDGET_PROGRESS_STAGES.length);
     } catch (requestError) {
       setWidgetError(requestError.message || 'This AI analysis could not be completed.');
     } finally {
-      clearStageTimers();
       setIsWidgetAnalysing(false);
     }
-  }, [canAnalyseWidgets, clearStageTimers, isWidgetAnalysing]);
+  }, [canAnalyseWidgets, isWidgetAnalysing]);
 
   const closeWidgetDrawer = useCallback(() => {
     if (isWidgetAnalysing) return;
     setActiveWidgetSection(null);
+    setWidgetStream(null);
     setWidgetError('');
   }, [isWidgetAnalysing]);
+
+  const openRecommendedAction = useCallback(() => {
+    if (!activeWidgetSection) return;
+    const target = dashboardWidgetActionTarget(activeWidgetSection);
+    setActiveWidgetSection(null);
+    setWidgetStream(null);
+    setWidgetError('');
+    navigateTo(target.path);
+  }, [activeWidgetSection]);
 
   const activeWidget = activeWidgetSection ? DASHBOARD_AI_WIDGETS[activeWidgetSection] : null;
   const activeWidgetResult = activeWidgetSection ? widgetResults[activeWidgetSection] : null;
@@ -945,12 +1142,14 @@ export default function MainDashboardPage() {
 
       <AiWidgetDrawer
         widget={activeWidget}
+        section={activeWidgetSection}
         result={activeWidgetResult}
+        streamResult={widgetStream}
         error={widgetError}
         isAnalysing={isWidgetAnalysing}
-        activeStage={widgetAnalysisStage}
         onClose={closeWidgetDrawer}
         onAnalyseAgain={() => activeWidgetSection && startWidgetAnalysis(activeWidgetSection)}
+        onRecommendedAction={openRecommendedAction}
       />
     </CustomerGraphAppShell>
   );

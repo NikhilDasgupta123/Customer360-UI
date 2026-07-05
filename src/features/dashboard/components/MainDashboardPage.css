@@ -966,3 +966,325 @@
   .dash-widget-drawer { width: 100vw; }
   .dash-widget-drawer-title h3 { max-width: 240px; }
 }
+
+/* Streaming AI widget drawer ------------------------------------------------
+   The drawer receives SSE lifecycle and validated-result blocks from the
+   existing Dashboard AI endpoint. These styles keep the response scannable:
+   short brief, labelled signals, and one clear clickable next step. */
+.dash-widget-close:disabled {
+  opacity: .45;
+  cursor: wait;
+}
+
+.dash-widget-progress {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf0f6;
+}
+
+.dash-widget-live-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
+  color: #6838d6;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dash-widget-live-label > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6d35df;
+  box-shadow: 0 0 0 4px rgba(109, 53, 223, .11);
+  animation: dash-widget-live-pulse 1.15s ease-in-out infinite;
+}
+
+.dash-widget-progress-meter {
+  height: 5px;
+  margin-top: 15px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eceff6;
+}
+
+.dash-widget-progress-meter > span {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7652e6, #9f80fa);
+  transition: width .28s ease;
+}
+
+.dash-widget-result {
+  display: grid;
+  align-content: start;
+  gap: 0;
+  padding-top: 17px;
+}
+
+.dash-widget-result.is-streaming {
+  padding-top: 14px;
+}
+
+.dash-widget-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dash-widget-section-title h4 {
+  margin: 0;
+}
+
+.dash-widget-stream-chip,
+.dash-widget-count-blob {
+  display: inline-flex;
+  align-items: center;
+  min-width: max-content;
+  padding: 3px 6px;
+  border-radius: 999px;
+  color: #5f38c9;
+  background: #f0ebff;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.dash-widget-count-blob {
+  color: #1b7650;
+  background: #eaf9f0;
+}
+
+.dash-widget-brief-section > p {
+  min-height: 42px;
+  margin-top: 7px;
+  color: #4e5c71;
+  font-size: 12px;
+  line-height: 1.62;
+}
+
+.dash-widget-brief-section > p.is-pending,
+.dash-widget-evidence-pending {
+  color: #8590a2;
+  font-style: italic;
+}
+
+.dash-widget-emphasis {
+  padding: 1px 3px;
+  border-radius: 4px;
+  color: #28354d;
+  background: #eef1f8;
+  font-weight: 850;
+}
+
+.dash-widget-typing-caret {
+  display: inline-block;
+  width: 2px;
+  height: 12px;
+  margin-left: 3px;
+  vertical-align: -2px;
+  background: #6d35df;
+  animation: dash-widget-caret 1s step-end infinite;
+}
+
+.dash-widget-signals-section {
+  padding-top: 15px;
+  border-top: 1px solid #edf0f6;
+}
+
+.dash-widget-evidence-list {
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dash-widget-evidence-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid #e5e9f2;
+  border-radius: 9px;
+  background: #fbfcfe;
+}
+
+.dash-widget-evidence-list li > p {
+  margin: 0;
+  color: #56647a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.dash-widget-signal-blob {
+  align-self: start;
+  padding: 4px 5px;
+  border-radius: 5px;
+  color: #41516a;
+  background: #edf1f7;
+  font-size: 8.5px;
+  font-weight: 850;
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.dash-widget-evidence-pending {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.dash-widget-next-action {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin-top: 17px;
+  padding: 13px;
+  border: 1px solid #ded7fb;
+  border-radius: 11px;
+  color: inherit;
+  background: #faf8ff;
+  cursor: default;
+  font: inherit;
+  text-align: left;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.dash-widget-next-action:disabled {
+  opacity: .72;
+}
+
+.dash-widget-next-action.is-ready {
+  cursor: pointer;
+}
+
+.dash-widget-next-action.is-ready:hover {
+  border-color: #bdaafa;
+  background: #f7f4ff;
+  box-shadow: 0 7px 18px rgba(89, 54, 184, .09);
+  transform: translateY(-1px);
+}
+
+.dash-widget-next-action:focus-visible {
+  outline: 2px solid #6d35df;
+  outline-offset: 3px;
+}
+
+.dash-widget-next-action > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  color: #6838d6;
+  background: #ece6ff;
+}
+
+.dash-widget-next-action p {
+  margin-top: 5px;
+  color: #59667a;
+  font-size: 11.5px;
+  line-height: 1.48;
+}
+
+.dash-widget-next-action .dash-widget-section-title small {
+  color: #6a42cf;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.dash-widget-open-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 9px;
+  color: #5b31c8;
+  font-size: 10.5px;
+  font-weight: 850;
+}
+
+.dash-widget-result-footer {
+  margin-top: 17px;
+}
+
+@keyframes dash-widget-caret {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
+
+@keyframes dash-widget-live-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(.72); opacity: .66; }
+}
+
+@media (max-width: 500px) {
+  .dash-widget-evidence-list li { grid-template-columns: 1fr; }
+  .dash-widget-signal-blob { justify-self: start; }
+  .dash-widget-next-action { grid-template-columns: 27px minmax(0, 1fr); padding: 11px; }
+}
+
+
+/* AI widget readability and paced-result presentation --------------------- */
+.dash-widget-live-label {
+  color: #5f38c9;
+}
+
+.dash-widget-brief-list {
+  display: grid;
+  gap: 8px;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dash-widget-brief-list li {
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.dash-widget-brief-list li > span {
+  width: 6px;
+  height: 6px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: #7445de;
+  box-shadow: 0 0 0 4px rgba(116, 69, 222, .09);
+}
+
+.dash-widget-brief-list p {
+  margin: 0;
+  color: #4e5c71;
+  font-size: 12px;
+  line-height: 1.62;
+}
+
+.dash-widget-evidence-list li {
+  align-items: center;
+}
+
+.dash-widget-signal-blob {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #5b31c8;
+  background: #f0ebff;
+  font-size: 8.8px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dash-widget-next-action.is-ready {
+  cursor: pointer;
+}
+
+.dash-widget-open-action {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
